@@ -572,6 +572,17 @@ begin
 	surface!(ϕₚ, ϕₘ, Z, alpha=0.7)
 end
 
+# ╔═╡ b1819cf6-72e6-430a-b965-01be95790608
+md"""
+# Outlook: Makie
+
+Nowadays, [Makie](https://docs.makie.org/stable/) has more stars than `Plots` and is slowly (or rapidly?) replacying `Plots` as the standard library for plotting in Julia.
+
+It also supports different [backends](https://docs.makie.org/stable/#Installation) for GPU acceleration or webplots.
+
+Check out the [tutorial](https://docs.makie.org/stable/tutorials/getting-started).
+"""
+
 # ╔═╡ f7306e74-f76f-457c-84f4-360ba1983b61
 TableOfContents()
 
