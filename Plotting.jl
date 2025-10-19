@@ -235,6 +235,9 @@ It's advisable to let the computer handle your units if you don't want your [Mar
 [^3]: As long as you respect type stability.
 """
 
+# ╔═╡ b3585c8e-3458-4447-997b-c40dad1c367a
+ENV["UNITFUL_FANCY_EXPONENTS"] = "true"  # use unicode exponents
+
 # ╔═╡ 6703f18e-e8c4-49f4-8a8c-baf6096b6fe0
 md"""
 Let's calculate the kinetic energy in ``J`` from velocity and math:
@@ -263,7 +266,7 @@ And we can readily plot the results, with no chance of messing up the units:
 """
 
 # ╔═╡ 15bdf230-a09a-4c68-8dd9-291397979017
-default(fontfamily="Computer Modern")
+# default(fontfamily="Computer Modern")
 
 # ╔═╡ 905d1ded-dbfc-411d-86a3-7b6e419f26de
 ["m=$(mi)" for mi in masses]
