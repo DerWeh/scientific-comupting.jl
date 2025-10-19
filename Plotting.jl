@@ -49,8 +49,8 @@ Feel free to switch it out:
 * [UnicodePlots](https://docs.juliaplots.org/latest/backends/#[UnicodePlots](https://github.com/JuliaPlots/UnicodePlots.jl)):
   Get simple visualizations directly in your terminal (e.g. when sshing into the cluster).
 
-For general adivice on visualization consider <https://www.data-to-viz.com/>.
-Have a look at the [caveats](https://www.data-to-viz.com/caveats.html) to avoid common errors.
+For general advice on visualization consider <https://www.data-to-viz.com/>.
+Take a look at the [caveats](https://www.data-to-viz.com/caveats.html) to avoid common errors.
 
 [^1]: Consider also the [official tutorial](https://docs.juliaplots.org/stable/tutorial/).
 
@@ -99,7 +99,7 @@ In this case, the last plot is mutated.
 Due to the reactive nature of [Pluto](https://plutojl.org/en/docs/), it is necessary to keep the functions in one cell using the `begin end` expression.
 
 Note the interactivity provided by the `PlotlyJS` backend:
-You can zoom the data; a mouse-over provides you the exacte coordinates of a point.
+You can zoom the data; a mouse-over provides you the exact coordinates of a point.
 
 Alternatively, we could have also provided everything as arguments to scatter:
 """
@@ -188,17 +188,17 @@ begin
 end
 
 # ╔═╡ e3232e8e-d578-4c13-bc40-3e677cd089b3
-gr()  # switching backends doesn't go well with Pluto's reactive stile...
+gr()  # switching backends doesn't go well with Pluto's reactive style...
 
 # ╔═╡ 5c2355cf-8d1b-4ed5-b77b-221641dbeb56
 md"""
-We consider to live with this specific limitation and stick with the `plotlyjs` backend, but feel free to switch.
+We consider living with this specific limitation and stick with the `plotlyjs` backend, but feel free to switch.
 
 Let's consider a few more common needs:
 
  * logarithmic axes,
  * multiple subplots,
- * specifiying grids (not really needed for interactive plots).
+ * specifying grids (not really needed for interactive plots).
 """
 
 # ╔═╡ 305caacc-cc12-4a04-bb14-daf7c0070fb1
@@ -230,14 +230,14 @@ Luckily, most packages integrate nicely such we can also readily visualize them.
 
 ### Units
 For example Julia has a great package for quantities with physical dimensions with no runtime overhead[^3].
-It's adviceable to let the computer handle your units if you don't want your [Mars Climate Orbiter to crash](https://en.wikipedia.org/wiki/Mars_Climate_Orbiter).
+It's advisable to let the computer handle your units if you don't want your [Mars Climate Orbiter to crash](https://en.wikipedia.org/wiki/Mars_Climate_Orbiter).
 
 [^3]: As long as you respect type stability.
 """
 
 # ╔═╡ 6703f18e-e8c4-49f4-8a8c-baf6096b6fe0
 md"""
-Let's calculate the kinetic energy in ``J`` from veleocity and math:
+Let's calculate the kinetic energy in ``J`` from velocity and math:
 """
 
 # ╔═╡ 089d3276-d530-4598-9ed3-aa6aa9b92487
@@ -259,7 +259,7 @@ wrong_energies =  @. uconvert(u"J", 1//2 * masses' * velocity)
 
 # ╔═╡ 212a5c72-a742-46db-98d6-348b8102a624
 md"""
-And we can readily plots the results, with no chance of messing up the units:
+And we can readily plot the results, with no chance of messing up the units:
 """
 
 # ╔═╡ 15bdf230-a09a-4c68-8dd9-291397979017
@@ -288,8 +288,8 @@ velocity_std = 0.1u"m/s"
 md"""
 ### Simple errors
 
-We can also add simple (gaussian) measurment errors.
-For simplicity, we assume that we a fixed accuracy of $(velocity_std) for the velocity and a relative error of 0.05 for the mass.
+We can also add simple (Gaussian) measurement errors.
+For simplicity, we assume a fixed accuracy of $(velocity_std) for the velocity and a relative error of $(mass_rstd) for the mass.
 """
 
 # ╔═╡ a1606349-d5a0-4ea1-954b-2ffbcf07792d
@@ -325,7 +325,7 @@ md"""
 ### Sampled errors
 
 The above example used [linear error propagation](https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Linear_combinations) (assuming Gaussian errors), but more often than not, we consider nonlinear effects.
-That's why it is typically a good idea to bruteforce error propagation:
+That's why it is typically a good idea to brute-force error propagation:
 Just use many input samples (from suitable distribution), and calculate the result.
 Computers are very good with repeated computation, so we can often check if our assumptions for error propagation were reasonable.
 
@@ -335,7 +335,7 @@ Again, Julia's got our back and provides us with [MonteCarloMeasurements](https:
 # ╔═╡ 2cc26d9e-2e97-4a8b-ada3-2c36b5957d1a
 md"""
 !!! warning "Please take this example as proof of concept"
-    I have not rigously check the correct construction of the distributions.
+    I have not rigorously checked the correct construction of the distributions.
     The examples may contain errors.
 	Please report them.
 """
@@ -371,7 +371,7 @@ kinetic_energies_mc = @. uconvert(u"J", 1//2 * masses_mc' * velocity_mc^2)
 # ╔═╡ d8752d76-582c-4590-ace4-dc5cbabf7e63
 md"""
 Here, we have to be a bit more careful.
-`MonteCarloMeasurements` aren't as seemlessly integrated with `Unitful` as `Measurements` were.
+`MonteCarloMeasurements` aren't as seamlessly integrated with `Unitful` as `Measurements` are.
 We have to strip the units and reattach them.
 """
 
@@ -399,7 +399,7 @@ plot(kinetic_energies_mc[10,2])
 
 # ╔═╡ 27f5e1d4-e605-4b56-9061-92a563582c9b
 md"""
-Or sample trajectories with qunatiels of the results:
+Or sample trajectories with quantiles of the results:
 
 (TODO: we hard code units...)
 """
@@ -410,9 +410,9 @@ plot(ustrip(velocity[begin:3:end]), ustrip(kinetic_energies_mc), xlabel=L"$v$ (m
 # ╔═╡ ca273889-8312-4f13-a2be-69d58f748db1
 md"""
 Alternatively, we can use 
- * `ribbonplot` which uses a colorshade for the 0.025th and 0.975th quantiles,
+ * `ribbonplot` which uses a color shade for the 0.025th and 0.975th quantiles,
  * `mcplot` which plots all (or a specified number of) trajectories,
- * `errorbarplot` which plots the 0.025th and 0.975th quantiles as errorbars.
+ * `errorbarplot` which plots the 0.025th and 0.975th quantiles as error bars.
 """
 
 # ╔═╡ f75506d5-17d0-4d58-b0a6-914722d5058e
@@ -427,8 +427,8 @@ density(ustrip(kinetic_energies_mc[10, 2]))
 md"""
 ## 2D Figures
 
-We can still visualize data quite well (in case we choose suitable colormaps).
-Let's considere the following function of two vairables:
+We can still visualize data quite well (in case we choose suitable color maps).
+Let's consider the following function of two variables:
 """
 
 # ╔═╡ 214e6655-ced6-41a9-a059-052359ac24eb
@@ -438,9 +438,9 @@ end
 
 # ╔═╡ 789417a5-467d-4069-9b41-7c0d38b73c79
 md"""
-!!! note "Don't overuse unicode"
+!!! note "Don't overuse Unicode!"
 	Users have to type it, too.
-	In a notebook, it can impove readability though.
+	In a notebook, it can improve readability though.
 """
 
 # ╔═╡ 9f2754a2-1cb2-4574-90a1-172faa6dfaf0
@@ -454,7 +454,7 @@ Z = flux_qubit_potential.(ϕₚ', ϕₘ)
 
 # ╔═╡ ef077f0d-83a5-4102-8b00-9ecb54e3eb8e
 md"""
-2-dimensional data can be plotted as heatmap:
+2-dimensional data can be plotted as heat map:
 """
 
 # ╔═╡ cd6ce327-dc64-468e-a069-df031a65601c
@@ -465,13 +465,13 @@ md"""
 !!! warning "Use appropriate color schemes"
 	 * Use perceptionally uniform color schemes for numeric data (`:default`).
 	 * Never use rainbows.
-	 * Use diverging colormaps if you have positiv/negative effects and center 0 (`:bluesreds`).
-     * Use cyclic colormaps for a phase (`:cyclic_wrwbw_40_90_c42_n256_s25`).
+	 * Use diverging color maps if you have positive/negative effects and center 0 (`:bluesreds`).
+     * Use cyclic color maps for a phase (`:cyclic_wrwbw_40_90_c42_n256_s25`).
 	 * Use palettes for categorical data (`:tab10`).
-	 * Mind color blindnes! 1 in 12 men is red-green blind.
+	 * Mind color blindness! 1 in 12 men is red-green blind.
 
-Matplotlib has reasonable advice on [choosing colormaps](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
-Colorcet also gives a visual explantion: <https://colorcet.holoviz.org/>
+`matplotlib` has reasonable advice on [choosing colormaps](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+`colorcet` also gives a visual explanation: <https://colorcet.holoviz.org/>
 """
 
 # ╔═╡ 72b6fa22-a2e7-4945-858b-ff041ed95817
@@ -499,7 +499,7 @@ end
 # ╔═╡ dcb60e84-2973-4596-9387-b007db3746e8
 md"""
 It's still quite hard to read off individual values.
-We can either use a interactive backend, or add explicity labels:
+We can either use an interactive backend, or add explicit labels:
 """
 
 # ╔═╡ b277238e-8a3a-4e3e-b1b2-ef17ff457ae8
@@ -533,11 +533,11 @@ md"""
 ## 3D figures
 
 We can also represent the data in 3D.
-Be very carefull when doing this.
-Many people have problems interpreting 3D plots, most of the time a 2D plots is preferable.
+Be very careful when doing this.
+Many people have problems interpreting 3D plots, most of the time a 2D plot is preferable.
 If a 3D plots is appropriate, try to make it interactive, such that it can be rotated.
 
-We can show a colorplot using `surface`:
+We can show a color plot using `surface`:
 """
 
 # ╔═╡ fb736433-fd51-4cc9-9b84-a702c54dbaef
