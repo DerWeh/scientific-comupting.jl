@@ -32,7 +32,7 @@ Let's start with the school book definition of a derivative:
 	= \lim_{h \rightarrow \infty} \frac{f(x+h) - f(x)}{h}
 ```
 
-The numerical evaluations seems straight forward: just use a small value ``h``.
+The numerical evaluation seems straight forward: just use a small value ``h``.
 This is called *finite difference*, as we use a finite value of ``h``.
 
 We use the symmetric central difference
@@ -46,28 +46,28 @@ We use the symmetric central difference
 # ╔═╡ d2e065a5-14b1-4558-a7d2-8c3d777c6c5d
 md"""
 We see that initially the accuracy improves quadratically with the step size:
-Reducing ``h`` by one order of magnitude the error decreses by two orders of magnitude.
-In our simple toy example, the minaml error is obtained for ``h=10^{-6}`` at ``\Delta\approx10^{-12}``.
-Deacreasing `h` further, round-off errors of finite precision readuces the accuracy.
+Reducing ``h`` by one order of magnitude the error decreases by two orders of magnitude.
+In our simple toy example, the minimal error is obtained for ``h=10^{-6}`` at ``\Delta\approx10^{-12}``.
+Decreasing `h` further, round-off errors of finite precision reduce the accuracy.
 
-The probelm becomes more apparent when using lower precision:
+The problem becomes more apparent when using lower precision:
 """
 
 # ╔═╡ 27cb8eac-a052-45b6-9b4e-55ee0dd72048
 md"""
-In general, finite difference have problems with numerical inaccuracies and instablilites, especially when calculating higher order derivatives.
+In general, finite difference have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
 Finite difference become slow, when calculating gradients with respect to many inputs.
 
-Some packages offert to calcualte numerical derivates using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
+Some packages offer to calculate numerical derivates using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
 While calculating analytical integrations is hard and differentiation is simple,
-numerically it's the other way around: integrating is quite simple while differentations becomes hard.
+numerically it's the other way around: integrating is quite simple while differentiations becomes hard.
 """
 
 # ╔═╡ 2eb2e25c-df4b-4059-8395-c1fab6400bdf
 md"""
-## Symbolic differentation
+## Symbolic differentiation
 
-Symbolic differentation calcualtes the analytic derivative of functions using symbolic computation.
+Symbolic differentiation calculates the analytic derivative of functions using symbolic computation.
 
 We'll use the [Symbolics.jl](https://docs.sciml.ai/Symbolics/stable/) computer algebra system.
 """
@@ -85,13 +85,13 @@ D = Differential(α)
 
 # ╔═╡ 8787daf9-52a1-469f-bd9d-aba957c67318
 md"""
-The result of symbolic differentiation become unwieldy quite fast which can be come inefficent.
-Especially as soon as branches and loops get involved, symbolic differntation might reach its limits.
+The result of symbolic differentiation becomes unwieldy quite fast which can become inefficient.
+Especially as soon as branches and loops get involved, symbolic differentiation might reach its limits.
 """
 
 # ╔═╡ 2c41d052-6f0a-40af-be12-6f193b24b971
 md"""
-## Automatic differentation
+## Automatic differentiation
 
 Automatic differentiation is the modern solution: We evaluate the derivative along with the function without building the function graph.
 
@@ -140,7 +140,7 @@ derivative(y)
 # ╔═╡ f12b46af-0d0c-458a-897d-66eeab419ece
 md"""
 So far, we haven't done anything impressive.
-We only calcualted a trivial derivative, and we even had to specify it ourselves.
+We only calculated a trivial derivative, and we even had to specify it ourselves.
 So far we cannot do anything useful:
 """
 
@@ -165,7 +165,7 @@ Our definition of dual numbers brings already the termination condition for the 
 	\frac{\partial f(x)}{\partial x}
 	= f'(x) \frac{\partial x}{\partial x} = f'(x) \cdot 1
 ```
-We explictely passed in the ``1``.
+We explicitly passed in the ``1``.
 So let's add the method for dual numbers to the `+` function:
 """
 
@@ -219,10 +219,10 @@ derivative(x*y)
 # ╔═╡ 8c01d6c6-3b89-4539-a78f-9965de105c58
 md"""
 This is a good point to remember how magic generic programming can be.
-Our definition of `DualV1` was gerneric with respect to the data type, so far we only used `Float64`, but it works just es well for other precisions like `Float32`, arbitrary precision (`BigFLoat`), and even symbols!
+Our definition of `DualV1` was generic with respect to the data type, so far we only used `Float64`, but it works just es well for other precisions like `Float32`, arbitrary precision (`BigFLoat`), and even symbols!
 By implementing automatic differentiation, we get symbolic differentiation for free!
 
-This is quite usefull to validate our implementation.
+This is quite useful to validate our implementation.
 Computers are good with numbers, me, not so much.
 """
 
@@ -306,20 +306,20 @@ derivative(((a + b) / (a - c))^d)
 
 # ╔═╡ cac92ee9-ee5d-4ded-8760-cf593f2eb342
 md"""
-In the above defitions we were being 'smart' about the implementation, resuing other definitions we already provided.
+In the above definitions we were being 'smart' about the implementation, reusing other definitions we already provided.
 This reduces the chance of making errors, but might be less efficient than a specialized implementation.
 
 So now the big question: what about *flow control*?
 Interesting problems require loops and conditionals.
 
-Let's start out with the Θ-step function and the ReLU polular in machine learning:
+Let's start out with the Θ-step function and the ReLU popular in machine learning:
 """
 
 # ╔═╡ a9a6f108-80a3-4f30-b754-36c4c06a7bd2
 md"""
-Apparrently we still haven't defined all we need.
+Apparently we still haven't defined all we need.
 We forgot about comparisons.
-But for comparisions, we have to restrict `Number` to `Real`.
+But for comparisons, we have to restrict `Number` to `Real`.
 """
 
 # ╔═╡ 1aba3e89-98e6-42d6-9fdc-1256e99898f7
@@ -346,14 +346,14 @@ end
 md"""
 At this point, the magic has left us.
 Comparing a symbol (`Num`) to a number does return a boolean but another symbol (`Num`).
-Likewise the `ifelse` for a symbol..
+Likewise, the `ifelse` for a symbol.
 
 So let's instead go back to evaluating the derivative at numeric values.
 """
 
 # ╔═╡ a6175368-8212-42c5-8e32-a243ae23019d
 md"""
-Next, let's consider the arithmetic-geometric mean (AGM), which is e.g. usefull to efficiently evaluate elliptic integrals.
+Next, let's consider the arithmetic-geometric mean (AGM), which is e.g. useful to efficiently evaluate elliptic integrals.
 The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` of the series
 
 ```math
@@ -453,9 +453,9 @@ We always had to implement 3 methods for eqach operator `op`:
  * `op(::DualV1, ::DualV1)`,
  * `op(::DualV1, ::Number)`,
  * `op(::Number, ::DualV1)`.
-The second and thrid method are infact only special cases: the derivative for normal numbers is 0 by definition.
-Furhtermore, we had to define many special functions to get things working.
-We can avoid this redudant definitons by leveraging Julia's type promotion system and making dual numbers numbers.
+The second and third method are in fact only special cases: the derivative for normal numbers is 0 by definition.
+Furthermore, we had to define many special functions to get things working.
+We can avoid this redundant definitions by leveraging Julia's type promotion system and making dual numbers numbers.
 """
 
 # ╔═╡ 700d8843-b48f-49c3-876e-418c1011da69
