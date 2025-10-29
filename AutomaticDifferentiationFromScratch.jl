@@ -43,16 +43,6 @@ We use the symmetric central difference
 ```
 """
 
-# ╔═╡ d2e065a5-14b1-4558-a7d2-8c3d777c6c5d
-md"""
-We see that initially the accuracy improves quadratically with the step size:
-Reducing ``h`` by one order of magnitude the error decreases by two orders of magnitude.
-In our simple toy example, the minimal error is obtained for ``h=10^{-6}`` at ``\Delta\approx10^{-12}``.
-Decreasing `h` further, round-off errors of finite precision reduce the accuracy.
-
-The problem becomes more apparent when using lower precision:
-"""
-
 # ╔═╡ 27cb8eac-a052-45b6-9b4e-55ee0dd72048
 md"""
 In general, finite difference have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
@@ -277,12 +267,6 @@ begin
 	/(a::Number, b::DualV1) = a * b^-1
 end
 
-# ╔═╡ 74681217-659d-49d8-aa1e-c0c863ea2144
-"""Central finite difference."""
-function cfd(func, x, h)
-	return inv(h)*(func(x + h/2) - func(x - h/2))
-end
-
 # ╔═╡ d10c042c-0147-4288-9eba-abc4d35341ff
 f = exp(α) * sin(α^2 + 3α) / (1 + α^2)^2
 
@@ -384,6 +368,39 @@ begin
 	eps(a::DualV1) = DualV1(eps(a.x), zero(a.dx))
 end
 
+# ╔═╡ 74681217-659d-49d8-aa1e-c0c863ea2144
+"""Central finite difference."""
+function cfd(func, x, h=cbrt(eps(x)))
+	return inv(h)*(func(x + h/2) - func(x - h/2))
+end
+
+# ╔═╡ 82ca69a8-aa6d-4f90-a912-b2f848e190a3
+md"""
+Let's check the error using the Taylor approximation
+
+```math
+	f(x ± δ) = f(x) ± δ f'(x) + \frac{δ^2}{2}f''(x) + \mathcal{O}(δ^3).
+```
+
+Thus, the central finite difference yields
+```math
+	f(x+\frac{h}{2}) - f(x - \frac{h}{2})
+	= h f'(x) + \mathcal{O}(h^3) + ϵ
+```
+where we added the error ``ϵ`` due to finite precision calculation on the computer.
+Thus, we get a numerical error of the order ``h^2 + \frac{ϵ}{h}``.
+In general, the error depends on ``f'''(x)``.
+Assuming that the function and its third derivative are on a similar scale, the error is minimal for ``h = \sqrt[3]{\frac{ϵ}{2}}``.
+As we only use rough numbers, we should not be over-precise and rather drop the factor ``2``.
+Thus, a good default choice for the step size ``h`` is
+```math
+	h^* = \sqrt[3]{ϵ},
+```
+where ``ϵ`` is the used floating point precision.
+For double precision, we get ``h^* = `` $(round(cbrt(eps(Float64)), sigdigits=1));
+For double precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
+"""
+
 # ╔═╡ 8d16f0a8-5425-45bf-be89-556dd927206b
 begin
 	import Base: <
@@ -416,15 +433,36 @@ begin
 	sqrt(x::DualV1) = x^(1//2)  # we already defined exponents
 end
 
-# ╔═╡ 3f413591-510e-4397-ae99-46dca365405c
-for h in logrange(1e-2, 1e-10, 9)
-	println("h=$(h)\tΔ=$(cfd(sqrt, 0.1, h) - 0.5*inv(sqrt(0.1)))")
-end
+# ╔═╡ 0a7ea06a-3e3c-400c-8449-dca4e8ae0373
+cdf_errors_64 = [
+	h => abs(cfd(sqrt, 0.1, h) - inv(2*sqrt(0.1)))
+	for h in logrange(1e-2, 1e-10, 9)
+]
 
-# ╔═╡ b1669381-9f45-4307-a290-ba50b3fe6023
-for h in logrange(1f-2, 1f-10, 9)
-	println("h=$(h)\tΔ=$(cfd(sqrt, 0.1f0, h) - 0.5*inv(sqrt(0.1f0)))")
-end
+# ╔═╡ e24c29c0-38f1-48c4-9811-4378fa4adcbe
+min_cdf_error_64 = argmin(x -> x.second, cdf_errors_64);
+
+# ╔═╡ d2e065a5-14b1-4558-a7d2-8c3d777c6c5d
+md"""
+We see that initially the accuracy improves quadratically with the step size:
+Reducing ``h`` by one order of magnitude the error decreases by two orders of magnitude.
+In our simple toy example, the minimal error is obtained for ``h=``$(min_cdf_error_64.first) at ``\Delta\approx`` $(round(min_cdf_error_64.second, sigdigits=1)).
+Decreasing `h` further, round-off errors of finite precision reduce the accuracy.
+
+The problem becomes more apparent when using lower precision:
+"""
+
+# ╔═╡ 7c7d4480-de38-4f5e-9a73-e43c77c29881
+cdf_errors_32 = [
+	h => abs(cfd(sqrt, 0.1f0, h) - inv(2*sqrt(0.1f0)))
+	for h in logrange(1f-2, 1f-10, 9)
+]
+
+# ╔═╡ d6712129-dcce-4884-8bb2-12724fff2622
+abs(cfd(sqrt, 0.1) - inv(2*sqrt(0.1)))
+
+# ╔═╡ e86e42cf-5787-452e-992a-4db9a48f2bd1
+abs(cfd(sqrt, 0.1f0) - inv(2*sqrt(0.1f0)))
 
 # ╔═╡ 4fe33ed1-a20c-4840-9ab4-42828e7b8804
 """Algorithmic-geometric mean."""
@@ -1571,9 +1609,13 @@ version = "17.5.0+2"
 # ╟─de19ba50-af83-11f0-8445-075b7cd7e011
 # ╟─1d9e9278-4dcd-4a22-a3ff-2a0d5426e4c1
 # ╠═74681217-659d-49d8-aa1e-c0c863ea2144
-# ╠═3f413591-510e-4397-ae99-46dca365405c
+# ╠═0a7ea06a-3e3c-400c-8449-dca4e8ae0373
+# ╟─e24c29c0-38f1-48c4-9811-4378fa4adcbe
 # ╟─d2e065a5-14b1-4558-a7d2-8c3d777c6c5d
-# ╠═b1669381-9f45-4307-a290-ba50b3fe6023
+# ╠═7c7d4480-de38-4f5e-9a73-e43c77c29881
+# ╟─82ca69a8-aa6d-4f90-a912-b2f848e190a3
+# ╠═d6712129-dcce-4884-8bb2-12724fff2622
+# ╠═e86e42cf-5787-452e-992a-4db9a48f2bd1
 # ╟─27cb8eac-a052-45b6-9b4e-55ee0dd72048
 # ╟─2eb2e25c-df4b-4059-8395-c1fab6400bdf
 # ╠═b8ca321b-736c-4a29-bec6-041bdb4c28fc
