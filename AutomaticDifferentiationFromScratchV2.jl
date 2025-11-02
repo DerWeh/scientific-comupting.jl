@@ -17,7 +17,7 @@ md"""
 Derivatives are ubiquitous in physics, take stress, strain, heat capacity, expansion coefficients, or response functions in general.
 Furthermore, they are a useful tool for optimization problems.
 
-This notebook shows a minimal implementation of automatic differentiation in Julia.
+This notebook shows a naive minimal implementation of automatic differentiation in Julia.
 But let's first start out with the traditional approaches and their limitations.
 """
 
@@ -43,15 +43,9 @@ We use the symmetric central difference
 ```
 """
 
-# ╔═╡ 74681217-659d-49d8-aa1e-c0c863ea2144
-"""Central finite difference."""
-function cfd(func, x, h=cbrt(eps(x)))
-	return inv(h)*(func(x + h/2) - func(x - h/2))
-end
-
 # ╔═╡ 27cb8eac-a052-45b6-9b4e-55ee0dd72048
 md"""
-In general, finite difference have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
+In general, finite differences have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
 Finite difference become slow, when calculating gradients with respect to many inputs.
 
 Some packages offer to calculate numerical derivates using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
@@ -64,6 +58,7 @@ md"""
 ## Symbolic differentiation
 
 Symbolic differentiation calculates the analytic derivative of functions using symbolic computation.
+This is like the pen-and-paper version of doing derivatives.
 
 We'll use the [Symbolics.jl](https://docs.sciml.ai/Symbolics/stable/) computer algebra system.
 """
@@ -119,13 +114,26 @@ For this purpose, we define a [`promotion_rule`](https://docs.julialang.org/en/v
 # ╔═╡ 01c7ee06-b5ed-48aa-838d-1e2635edae45
 begin
 	import Base: promote_rule
+	# promote regular numbers to dual numbers
 	promote_rule(::Type{Dual{T}}, ::Type{T}) where {T<:Number} = Dual{T}
-	promote_rule(::Type{Dual{T1}}, ::Type{T2}) where {T1, T2<:Number} = Dual{promote_rule(T1, T2)}
+	promote_rule(::Type{Dual{T1}}, ::Type{T2}) where {T1, T2<:Number} =
+		Dual{promote_rule(T1, T2)}
+	# mostly, Julia figures out symmetry on its own, but we have some edge cases
+	promote_rule(::Type{T}, ::Type{Dual{T}}) where {T<:Number} = Dual{T}
+	promote_rule(::Type{T1}, ::Type{Dual{T2}}) where {T1<:Number, T2} =
+		Dual{promote_rule(T1, T2)}
+	# try to promote dual number of different numbers
+	promote_rule(::Type{Dual{T1}}, ::Type{Dual{T2}}) where {T1<:Number, T2<:Number} =
+		Dual{promote_rule(T1, T2)}
+	# extensions for symbols, never do this in packages, this is type piracy!!!
+	# type priacy = extending functions we do not own by types we do not own
+	promote_rule(::Type{Num}, ::Type{<:Number}) = Num
 end
 
 # ╔═╡ 162800f3-c354-4ea6-8259-aabe1605178c
 md"""
 Other numbers are simply converted to `Dual` numbers of appropriate type.
+The default constructor `Dual(x)` is defined such that reagualar numbers get `dx = 0`.
 """
 
 # ╔═╡ 81ed17a9-d183-47b0-a4c7-593346ebf05e
@@ -176,7 +184,7 @@ Our definition of dual numbers brings already the termination condition for the 
 
 ```math
 	\frac{\partial f(x)}{\partial x}
-	= f'(x) \frac{\partial x}{\partial x} = f'(x) \cdot 1
+	= f'(x) \frac{\partial x}{\partial x} = f'(x) \cdot 1.
 ```
 We explicitly passed in the ``1``.
 So let's add the method for dual numbers to the `+` function:
@@ -231,15 +239,20 @@ b = Dual(β, Num(0))
 
 # ╔═╡ 9d2cd682-119f-47a4-8af5-b74433b7dca2
 md"""
-Symbolics.jl defines a specific method for `*` which circument our `promote_rule`:
+Symbolics.jl defines a specific method for `*` which circumvents our `promote_rule`:
 """
 
 # ╔═╡ 8aa901d5-d29a-48b3-934d-492222834988
-@which  c*a
+# ╠═╡ disabled = true
+#=╠═╡
+# this depends on execution order...
+# So after defining the method, it will show our more specific rule.
+@which  c*a  
+  ╠═╡ =#
 
 # ╔═╡ ed8ec309-c5df-47b1-8172-a3040af93cd8
 md"""
-Thus we have to define a more specific method, to get our multiplication yielding dual numers:
+Thus, we have to define a more specific method, to get our multiplication yielding dual numers:
 """
 
 # ╔═╡ e3a7decc-848d-4581-9a62-94a003b3af9b
@@ -258,6 +271,15 @@ derivative(x*y)
 # ╔═╡ 34789604-2744-4f19-aced-aa7e6e74d689
 derivative(13x+3y)
 
+# ╔═╡ 46fa536a-635e-48e7-9401-d3cf067a5481
+which(*, (Number, Num))
+
+# ╔═╡ 7323f5ea-2873-4fe9-9c41-8ad095af807d
+md"""
+While `Dual isa Number` the specification `Dual` is more precise than just number.
+As our method `*(::Num, ::Dual)` is more specific than `Symbolics`'s `*(::Num, ::Number)` it takes precedence.
+"""
+
 # ╔═╡ a62415df-7864-4b1b-859a-51c763fdbbfd
 derivative(c*a + d*b)
 
@@ -272,18 +294,65 @@ md"""
 Let's get the rest of the algebra we need:
 """
 
+# ╔═╡ e17d8292-1394-4d14-9d83-0cbb1dc02ce8
+Base.:-(a::Dual, b::Dual) = Dual(a.x - b.x, a.dx - b.dx)
+
+# ╔═╡ 84812014-4448-4639-a321-05f97798a860
+begin
+	import Base: -
+	-(a::Dual, b::Num) = a + Dual(-b)
+	-(a::Num, b::Dual) = Dual(a) - b
+end
+
 # ╔═╡ 3f0cc04a-d82f-4ac0-b8a5-e4d2a7fe0c3c
 # Now we get more tricky derivatives, you might need pen and paper.
 Base.:^(a::Dual, b::Dual) = Dual(
 	a.x^b.x,
-	b * a.x^(b-1) * a.dx + a^b.x * log(a) * b.dx
+	b.x * a.x^(b.x-1) * a.dx + a.x^b.x * log(a.x) * b.dx
 )
 
+# ╔═╡ 0bedb30e-27c2-4552-bb02-9585ac64facf
+begin  # again handling Symbolics
+	import Base: ^
+	^(a::Dual, b::Num) = a^Dual(b)
+	^(a::Num, b::Dual) = Dual(a)^b
+end
+
 # ╔═╡ f76836b6-dced-420c-b971-6bd1f03f7942
-Base.inv(a::Dual) = a^-1.0
+Base.inv(a::Dual) = a^-1.0  # fall back to floating point for simplicity
+
+# ╔═╡ 095aab17-491b-48d9-8124-a92d737bd683
+derivative(inv(a))
 
 # ╔═╡ dc9e185a-796c-43ef-9a25-7f2a84d9f69a
 Base.:/(a::Dual, b::Dual) = a * b^-1
+
+# ╔═╡ 2c2208ab-b29c-4859-818a-42a7b2f1e62c
+derivative(a/b)
+
+# ╔═╡ c1b87c8c-73f3-4cce-8bf1-11028b30f2c2
+derivative(b/a)
+
+# ╔═╡ 41408145-200f-4b36-b631-fc6b8bffcce4
+derivative(a^7)
+
+# ╔═╡ 47e54957-265c-4964-b1c2-53c55c40195c
+derivative(((a + b) / (a - c))^d)
+
+# ╔═╡ f5d16cbe-5daa-4273-9e13-f8ba45f8bf20
+md"""
+Let's look into our original example of symbolic derivatives.
+We need to define geometric functions:
+"""
+
+# ╔═╡ 4675c4cf-a6f9-4109-8d00-722a648acb5d
+Base.cos(a::Dual) = Dual(cos(a.x), -sin(a.x)*a.dx)
+
+# ╔═╡ f0190ecf-47a0-4618-a8f6-c8a3172a49ad
+Base.sin(a::Dual) = Dual(sin(a.x), +cos(a.x)*a.dx)
+
+# ╔═╡ 03cc182f-6cdc-4d40-ae30-10704bcb440c
+Base.exp(a::Dual) = Dual(exp(a.x), exp(a.x)*a.dx)
 
 # ╔═╡ d10c042c-0147-4288-9eba-abc4d35341ff
 f = exp(α) * sin(α^2 + 3α) / (1 + α^2)^2
@@ -294,17 +363,22 @@ df = D(f)
 # ╔═╡ e406d151-214e-4f40-9623-29bb636ef871
 expand_derivatives(df)
 
-# ╔═╡ c1b87c8c-73f3-4cce-8bf1-11028b30f2c2
-@which derivative(a/b)
+# ╔═╡ 99462628-168a-4cc5-a1a0-ed5d5244d509
+f
 
-# ╔═╡ 46135464-767d-4168-bbcf-d414a4fefaca
-@which derivative(b/a)
+# ╔═╡ e7f1a6a4-c445-4514-a972-e2fe0e9e1d0f
+expand_derivatives(df)
 
-# ╔═╡ 41408145-200f-4b36-b631-fc6b8bffcce4
-derivative(a^7)
+# ╔═╡ 8252153d-2a3c-4615-be65-f23e57dda841
+derivative(substitute(f, Dict(α => a)))
 
-# ╔═╡ 47e54957-265c-4964-b1c2-53c55c40195c
-@which derivative(((a + b) / (a - c))^d)
+# ╔═╡ 4cb1b685-f801-420b-bd70-c1f4c771d0bf
+md"""
+Or turning the symbolic expression into a function, that we evaluate at our Dual number:
+"""
+
+# ╔═╡ 2a4977ab-9749-49f8-a844-3791e015ac7c
+derivative(build_function(f, α, expression=Val{false})(a))
 
 # ╔═╡ cac92ee9-ee5d-4ded-8760-cf593f2eb342
 md"""
@@ -324,11 +398,30 @@ We forgot about comparisons.
 But for comparisons, we have to restrict `Number` to `Real`.
 """
 
+# ╔═╡ 1aba3e89-98e6-42d6-9fdc-1256e99898f7
+begin
+	# isless is not an arimetic operation, explicit overloads are necessary
+	# But it is enought to implement `<` to get comparisons
+	import Base: <
+	<(a::Dual{T1}, b::Dual{T2}) where {T1<:Real, T2<:Real} = a.x < b.x
+	<(a::Real, b::Dual{<:Real}) = a < b.x
+	<(a::Dual{<:Real}, b::Real) = a.x < b
+end
+
 # ╔═╡ bbdc708e-293d-41da-b756-c28d03da81fe
 Base.zero(a::Dual) = Dual(zero(a.x), zero(a.dx))
 
+# ╔═╡ 707cb394-f408-4088-a76e-57811d12002d
+relu(x) = ifelse(x > 0, x, zero(x))
+
 # ╔═╡ b13c0fd9-009e-44be-a328-06ab432a6b33
 Base.one(a::Dual) = Dual(one(a.x), zero(a.dx))
+
+# ╔═╡ 3885fa29-592a-4309-9147-9d726078cd9a
+step_function(x) = ifelse(x > 0, one(x), zero(x))
+
+# ╔═╡ 36f0e627-d25b-4ab8-8968-b0bf9775a2fa
+derivative(step_function(a))
 
 # ╔═╡ afb53e8a-e975-40e2-b663-5b71e9a8e865
 md"""
@@ -339,9 +432,18 @@ Likewise, the `ifelse` for a symbol.
 So let's instead go back to evaluating the derivative at numeric values.
 """
 
+# ╔═╡ 2a44be5c-5454-4d3c-9338-321d28f251e6
+derivative(step_function(x))
+
+# ╔═╡ 5bce83ec-ce0e-447a-9b4b-d44db39a6493
+derivative(relu(x))
+
+# ╔═╡ fc4d4dae-afa4-49d3-bbde-78ec41847001
+derivative(relu(y))
+
 # ╔═╡ a6175368-8212-42c5-8e32-a243ae23019d
 md"""
-Next, let's consider the arithmetic-geometric mean (AGM), which is e.g. useful to efficiently evaluate elliptic integrals.
+Next, let's consider the [arithmetic-geometric mean](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean) (AGM), which is e.g. useful to efficiently evaluate elliptic integrals.
 The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` of the series
 
 ```math
@@ -354,20 +456,10 @@ The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` o
 where `a_n` is the arithmetic mean of the previous results, and `g_n` the geometric mean of the previous results.
 """
 
-# ╔═╡ 4fe33ed1-a20c-4840-9ab4-42828e7b8804
-"""Algorithmic-geometric mean."""
-function agm(x, y)
-	a = x
-	g = y
-	while abs(a - g) > 3*eps(x)
-		# @show a, g
-		a, g = (1//2)*(a+g), sqrt(a*g)
-	end
-	return a
-end
-
-# ╔═╡ e25b9ee5-bacb-42e1-a947-3dcc8d158368
-agm(24.0, 6.0)
+# ╔═╡ ee3d0cec-08e1-4408-a995-a1a6198e608b
+md"""
+Let's cross-check our implementation with the [example](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean#Example) from Wikipedia:
+"""
 
 # ╔═╡ c788f25b-0f77-4396-a999-9917f99a872f
 md"""
@@ -379,7 +471,13 @@ The derivative is not defined at 0, but we don't really care.
 Base.abs(a::Dual) = Dual(abs(a.x), a.x*a.dx/abs(a.x))
 
 # ╔═╡ eb13a1cd-7769-4fe2-a8df-e800c34ce7c1
-Base.eps(a::Dual) = Dual(eps(a.x), zero(a.dx))
+Base.eps(a::Dual) = Dual(eps(a.x), zero(a.dx))  # maybe Dual is not quite meaningful here
+
+# ╔═╡ 74681217-659d-49d8-aa1e-c0c863ea2144
+"""Central finite difference."""
+function cfd(func, x, h=cbrt(eps(x)))
+	return inv(h)*(func(x + h/2) - func(x - h/2))
+end
 
 # ╔═╡ 82ca69a8-aa6d-4f90-a912-b2f848e190a3
 md"""
@@ -408,32 +506,8 @@ For double precision, we get ``h^* = `` $(round(cbrt(eps(Float64)), sigdigits=1)
 For double precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
 """
 
-# ╔═╡ 8d16f0a8-5425-45bf-be89-556dd927206b
-Base.:<(a::Dual{<:Real}, b::Dual{<:Real}) = a.x < b.x
-
-# ╔═╡ 1aba3e89-98e6-42d6-9fdc-1256e99898f7
-Base.:>(a::Dual{Real}, b::Dual{Real}) = a.x > b.x
-
-# ╔═╡ 3885fa29-592a-4309-9147-9d726078cd9a
-step_function(x) = ifelse(x > 0, one(x), zero(x))
-
-# ╔═╡ 36f0e627-d25b-4ab8-8968-b0bf9775a2fa
-derivative(step_function(a))
-
-# ╔═╡ 2a44be5c-5454-4d3c-9338-321d28f251e6
-derivative(step_function(x))
-
-# ╔═╡ 707cb394-f408-4088-a76e-57811d12002d
-relu(x) = ifelse(x > 0, x, zero(x))
-
-# ╔═╡ 5bce83ec-ce0e-447a-9b4b-d44db39a6493
-derivative(relu(x))
-
-# ╔═╡ fc4d4dae-afa4-49d3-bbde-78ec41847001
-derivative(relu(y))
-
-# ╔═╡ d9e362ba-6858-4165-b0c0-86c41a283fc1
-Base.sqrt(x::Dual) = x^(1//2)  # we already defined exponents
+# ╔═╡ be38cb8c-2825-4738-b490-5e2a89398cc7
+Base.sqrt(x::Dual) = x^(1//2)
 
 # ╔═╡ 0a7ea06a-3e3c-400c-8449-dca4e8ae0373
 cdf_errors_64 = [
@@ -466,8 +540,47 @@ abs(cfd(sqrt, 0.1) - inv(2*sqrt(0.1)))
 # ╔═╡ e86e42cf-5787-452e-992a-4db9a48f2bd1
 abs(cfd(sqrt, 0.1f0) - inv(2*sqrt(0.1f0)))
 
+# ╔═╡ 4fe33ed1-a20c-4840-9ab4-42828e7b8804
+"""Algorithmic-geometric mean."""
+function agm(x, y)
+	a = x
+	g = y
+	while abs(a - g) > 3*eps(x)
+		# @show a, g
+		a, g = (1//2)*(a+g), sqrt(a*g)
+	end
+	return a
+end
+
+# ╔═╡ e25b9ee5-bacb-42e1-a947-3dcc8d158368
+agm(24.0, 6.0)
+
 # ╔═╡ cca392b5-24c0-4899-af35-972d1ca6777e
 agm(x, y)
+
+# ╔═╡ 5de22a47-1386-4b43-b087-224339148166
+md"""
+## Generalization to multivariate functions
+"""
+
+# ╔═╡ 54ca2866-7cea-4c90-978c-e7a1031fc6ec
+md"""
+So far, we can just differentiate for a single variable.
+If we want partial derivatives for multiple variables, we have to reevaluate the functions for each variable.
+
+To generalize the `Dual` numbers to partial derivatives, we can introduce an entry for every variable:
+"""
+
+# ╔═╡ 8ccdf71e-3c2f-45fa-afb0-67dadeba12da
+struct PartialDual{T, N} <: Number
+	x::T
+	dx::NTuple{N, T}
+end
+
+# ╔═╡ 731769df-3a74-41b3-81a8-1ae226d4bb29
+md"""
+Here we won't go into further detail and rather refer to [DifferentiationInterface](https://juliadiff.org/DifferentiationInterface.jl/DifferentiationInterface/stable/) which provides a common AD interface for many backends, that are usable for real code.
+"""
 
 # ╔═╡ 4d436b91-06dc-462b-a2e2-f8704d50d37a
 TableOfContents()
@@ -1607,21 +1720,36 @@ version = "17.5.0+2"
 # ╟─8c01d6c6-3b89-4539-a78f-9965de105c58
 # ╠═58c510a6-a976-454b-98d5-f56f1b0e0b6a
 # ╠═8eb80e66-2a15-466c-87ed-4605469a35db
-# ╠═9d2cd682-119f-47a4-8af5-b74433b7dca2
+# ╟─9d2cd682-119f-47a4-8af5-b74433b7dca2
+# ╠═46fa536a-635e-48e7-9401-d3cf067a5481
 # ╠═8aa901d5-d29a-48b3-934d-492222834988
 # ╟─ed8ec309-c5df-47b1-8172-a3040af93cd8
 # ╠═e3a7decc-848d-4581-9a62-94a003b3af9b
+# ╟─7323f5ea-2873-4fe9-9c41-8ad095af807d
 # ╠═a62415df-7864-4b1b-859a-51c763fdbbfd
 # ╠═0b1cee5d-3cdd-41b2-bd12-206759d07dc1
 # ╠═4be13c18-144e-4cc9-a84e-35c9f2b247af
 # ╟─2b005fd0-fa15-490a-8e3c-d8bbc38fce27
+# ╠═e17d8292-1394-4d14-9d83-0cbb1dc02ce8
+# ╠═84812014-4448-4639-a321-05f97798a860
 # ╠═3f0cc04a-d82f-4ac0-b8a5-e4d2a7fe0c3c
+# ╠═095aab17-491b-48d9-8124-a92d737bd683
 # ╠═f76836b6-dced-420c-b971-6bd1f03f7942
 # ╠═dc9e185a-796c-43ef-9a25-7f2a84d9f69a
+# ╠═0bedb30e-27c2-4552-bb02-9585ac64facf
+# ╠═2c2208ab-b29c-4859-818a-42a7b2f1e62c
 # ╠═c1b87c8c-73f3-4cce-8bf1-11028b30f2c2
-# ╠═46135464-767d-4168-bbcf-d414a4fefaca
 # ╠═41408145-200f-4b36-b631-fc6b8bffcce4
 # ╠═47e54957-265c-4964-b1c2-53c55c40195c
+# ╟─f5d16cbe-5daa-4273-9e13-f8ba45f8bf20
+# ╠═f0190ecf-47a0-4618-a8f6-c8a3172a49ad
+# ╠═4675c4cf-a6f9-4109-8d00-722a648acb5d
+# ╠═03cc182f-6cdc-4d40-ae30-10704bcb440c
+# ╠═99462628-168a-4cc5-a1a0-ed5d5244d509
+# ╠═e7f1a6a4-c445-4514-a972-e2fe0e9e1d0f
+# ╠═8252153d-2a3c-4615-be65-f23e57dda841
+# ╟─4cb1b685-f801-420b-bd70-c1f4c771d0bf
+# ╠═2a4977ab-9749-49f8-a844-3791e015ac7c
 # ╟─cac92ee9-ee5d-4ded-8760-cf593f2eb342
 # ╠═3885fa29-592a-4309-9147-9d726078cd9a
 # ╠═707cb394-f408-4088-a76e-57811d12002d
@@ -1636,13 +1764,17 @@ version = "17.5.0+2"
 # ╠═fc4d4dae-afa4-49d3-bbde-78ec41847001
 # ╟─a6175368-8212-42c5-8e32-a243ae23019d
 # ╠═4fe33ed1-a20c-4840-9ab4-42828e7b8804
+# ╟─ee3d0cec-08e1-4408-a995-a1a6198e608b
 # ╠═e25b9ee5-bacb-42e1-a947-3dcc8d158368
 # ╟─c788f25b-0f77-4396-a999-9917f99a872f
 # ╠═57fdca80-e35f-40bc-8ba0-83d1d777dcbc
 # ╠═eb13a1cd-7769-4fe2-a8df-e800c34ce7c1
-# ╠═8d16f0a8-5425-45bf-be89-556dd927206b
-# ╠═d9e362ba-6858-4165-b0c0-86c41a283fc1
+# ╠═be38cb8c-2825-4738-b490-5e2a89398cc7
 # ╠═cca392b5-24c0-4899-af35-972d1ca6777e
+# ╟─5de22a47-1386-4b43-b087-224339148166
+# ╟─54ca2866-7cea-4c90-978c-e7a1031fc6ec
+# ╠═8ccdf71e-3c2f-45fa-afb0-67dadeba12da
+# ╟─731769df-3a74-41b3-81a8-1ae226d4bb29
 # ╟─6cd9539e-c4e0-4333-af8f-292e47cc539b
 # ╟─4d436b91-06dc-462b-a2e2-f8704d50d37a
 # ╟─00000000-0000-0000-0000-000000000001
