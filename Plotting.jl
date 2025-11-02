@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.19
+# v0.20.20
 
 using Markdown
 using InteractiveUtils
@@ -66,11 +66,11 @@ md"""
 ## Basics of `Plots`
 """
 
-# ╔═╡ d34351b7-7e61-440e-8702-7c456628a075
-import PlotlyJS  # install the dependency into the notebook
+# ╔═╡ e864c420-e5a4-4341-bd83-efd83c884029
+import PlotlyBase, PlotlyKaleido  # install the dependency into the notebook
 
 # ╔═╡ 6070ecde-6658-4563-8c58-1195c57fec07
-plotlyjs()
+plotly()
 
 # ╔═╡ a5d8d852-2bc4-40cb-820f-a7fb61564dd5
 md"""
@@ -183,7 +183,7 @@ begin
 		ylabel="y",
 		title="LaTeX legend using the GR backend.",
 	)
-	plotlyjs()
+	plotly()
 	p
 end
 
@@ -235,9 +235,6 @@ It's advisable to let the computer handle your units if you don't want your [Mar
 [^3]: As long as you respect type stability.
 """
 
-# ╔═╡ b3585c8e-3458-4447-997b-c40dad1c367a
-ENV["UNITFUL_FANCY_EXPONENTS"] = "true"  # use unicode exponents
-
 # ╔═╡ 6703f18e-e8c4-49f4-8a8c-baf6096b6fe0
 md"""
 Let's calculate the kinetic energy in ``J`` from velocity and math:
@@ -287,6 +284,13 @@ end
 # ╔═╡ 09b8b2fc-2867-4498-9302-13a1dbcbe501
 velocity_std = 0.1u"m/s"
 
+# ╔═╡ a1606349-d5a0-4ea1-954b-2ffbcf07792d
+# we downsample the velocity a bit to get nicer plots
+velocity_measured = @. @view(velocity[begin:3:end]) ± velocity_std
+
+# ╔═╡ 4bb49099-af36-4379-9356-40afd92b76b2
+mass_rstd = 0.05
+
 # ╔═╡ 34ce792e-9f83-491b-9094-a0eb1ed799c2
 md"""
 ### Simple errors
@@ -294,13 +298,6 @@ md"""
 We can also add simple (Gaussian) measurement errors.
 For simplicity, we assume a fixed accuracy of $(velocity_std) for the velocity and a relative error of $(mass_rstd) for the mass.
 """
-
-# ╔═╡ a1606349-d5a0-4ea1-954b-2ffbcf07792d
-# we downsample the velocity a bit to get nicer plots
-velocity_measured = @. @view(velocity[begin:3:end]) ± velocity_std
-
-# ╔═╡ 4bb49099-af36-4379-9356-40afd92b76b2
-mass_rstd = 0.05
 
 # ╔═╡ 7340575f-a877-47ce-b2cf-23abc95ca57f
 masses_measured = @. masses ± (masses*mass_rstd)
@@ -484,7 +481,7 @@ To get individual values, the `plotlyjs` backend is more suitable (mind the perf
 
 # ╔═╡ 8834f50c-02a0-4242-bb5e-7c423110f3fc
 begin
-	plotlyjs()
+	plotly()
 	heatmap(ϕₚ, ϕₘ, Z, xlabel="ϕₚ", ylabel="ϕₘ")
 end
 
@@ -545,7 +542,7 @@ We can show a color plot using `surface`:
 
 # ╔═╡ fb736433-fd51-4cc9-9b84-a702c54dbaef
 begin
-	plotlyjs()
+	plotly()
 	surface(ϕₚ,	ϕₘ,	Z)
 end
 
@@ -556,7 +553,7 @@ Or a mash plot:
 
 # ╔═╡ 3072c253-3ec5-4213-aaa9-ee40577c29e1
 begin
-	plotlyjs()
+	plotly()
 	@views wireframe(ϕₚ[begin:5:end], ϕₘ[begin:5:end], Z[begin:5:end, begin:5:end])
 end
 
@@ -567,7 +564,7 @@ Or maybe a combination of both:
 
 # ╔═╡ 34f8423d-bc53-4178-a080-23ff65c074ff
 begin
-	plotlyjs()
+	plotly()
 	@views wireframe(ϕₚ[begin:10:end], ϕₘ[begin:10:end], Z[begin:10:end, begin:10:end])
 	surface!(ϕₚ, ϕₘ, Z, alpha=0.7)
 end
@@ -583,6 +580,9 @@ It also supports different [backends](https://docs.makie.org/stable/#Installatio
 Check out the [tutorial](https://docs.makie.org/stable/tutorials/getting-started).
 """
 
+# ╔═╡ b3585c8e-3458-4447-997b-c40dad1c367a
+ENV["UNITFUL_FANCY_EXPONENTS"] = "true";  # use unicode exponents
+
 # ╔═╡ f7306e74-f76f-457c-84f4-360ba1983b61
 TableOfContents()
 
@@ -594,7 +594,8 @@ LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
 MonteCarloMeasurements = "0987c9cc-fe09-11e8-30f0-b96dd679fdca"
-PlotlyJS = "f0f68f2c-4968-5e81-91da-67840de0976a"
+PlotlyBase = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
+PlotlyKaleido = "f2990250-8cf9-495f-b13a-cce12b45703c"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
@@ -606,7 +607,8 @@ LaTeXStrings = "~1.4.0"
 Latexify = "~0.16.10"
 Measurements = "~2.14.1"
 MonteCarloMeasurements = "~1.5.1"
-PlotlyJS = "~0.18.17"
+PlotlyBase = "~0.8.21"
+PlotlyKaleido = "~2.3.0"
 Plots = "~1.41.1"
 PlutoUI = "~0.7.72"
 StatsPlots = "~0.15.8"
@@ -619,7 +621,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "d4efa3310528af8da7262d73596a55268d7cf500"
+project_hash = "a60efec9d5f6030ced9ca61507ca074d234da9bf"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -709,12 +711,6 @@ version = "7.21.0"
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
-[[deps.AssetRegistry]]
-deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
-git-tree-sha1 = "b25e88db7944f98789130d7b503276bc34bc098e"
-uuid = "bf4720bc-e11a-5d0c-854e-bdca1663c893"
-version = "0.1.0"
-
 [[deps.AxisAlgorithms]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
 git-tree-sha1 = "01b8ccb13d68535d73d2b0c23e39bd23155fb712"
@@ -735,12 +731,6 @@ deps = ["Static"]
 git-tree-sha1 = "f21cfd4950cb9f0587d5067e69405ad2acd27b87"
 uuid = "62783981-4cbd-42fc-bca8-16325de8dc4b"
 version = "0.1.6"
-
-[[deps.Blink]]
-deps = ["Base64", "Distributed", "HTTP", "JSExpr", "JSON", "Lazy", "Logging", "MacroTools", "Mustache", "Mux", "Pkg", "Reexport", "Sockets", "WebIO"]
-git-tree-sha1 = "bc93511973d1f949d45b0ea17878e6cb0ad484a1"
-uuid = "ad839575-38b3-5650-b840-f874b8c74a25"
-version = "0.12.9"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1019,12 +1009,6 @@ git-tree-sha1 = "7a214fdac5ed5f59a22c2d9a885a16da1c74bbc7"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
-[[deps.FunctionalCollections]]
-deps = ["Test"]
-git-tree-sha1 = "04cb9cfaa6ba5311973994fe3496ddec19b6292a"
-uuid = "de31a74c-ac4f-5751-b3fd-e18cd04993ca"
-version = "0.5.0"
-
 [[deps.GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll", "libdecor_jll", "xkbcommon_jll"]
 git-tree-sha1 = "fcb0584ff34e25155876418979d4c8971243bb89"
@@ -1089,12 +1073,6 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "f923f9a774fcf3f5cb761bfa43aeadd689714813"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "8.5.1+0"
-
-[[deps.Hiccup]]
-deps = ["MacroTools", "Test"]
-git-tree-sha1 = "6187bb2d5fcbb2007c39e7ac53308b0d371124bd"
-uuid = "9fb69e20-1954-56bb-a84f-559cc56a8ff7"
-version = "0.2.2"
 
 [[deps.HostCPUFeatures]]
 deps = ["BitTwiddlingConvenienceFunctions", "IfElse", "Libdl", "Static"]
@@ -1178,12 +1156,6 @@ git-tree-sha1 = "0533e564aae234aff59ab625543145446d8b6ec2"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.7.1"
 
-[[deps.JSExpr]]
-deps = ["JSON", "MacroTools", "Observables", "WebIO"]
-git-tree-sha1 = "b413a73785b98474d8af24fd4c8a975e31df3658"
-uuid = "97c1335a-c9c5-57fe-bc5d-ec35cebe8660"
-version = "0.5.4"
-
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
@@ -1265,12 +1237,6 @@ deps = ["ArrayInterface", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static"
 git-tree-sha1 = "a9eaadb366f5493a5654e843864c13d8b107548c"
 uuid = "10f19ff3-798f-405d-979b-55457f8fc047"
 version = "0.1.17"
-
-[[deps.Lazy]]
-deps = ["MacroTools"]
-git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
-uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
-version = "0.15.1"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1480,18 +1446,6 @@ git-tree-sha1 = "816620e3aac93e5b5359e4fdaf23ca4525b00ddf"
 uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
 version = "0.10.3"
 
-[[deps.Mustache]]
-deps = ["Printf", "Tables"]
-git-tree-sha1 = "3cbd5dda543bc59f2e482607ccf84b633724fc32"
-uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
-version = "1.0.21"
-
-[[deps.Mux]]
-deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "MbedTLS", "Pkg", "Sockets"]
-git-tree-sha1 = "7295d849103ac4fcbe3b2e439f229c5cc77b9b69"
-uuid = "a975b10e-0019-58db-a62f-e48ff68538c9"
-version = "1.0.2"
-
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "9b8215b1ee9e78a293f99797cd31375471b2bcae"
@@ -1595,12 +1549,6 @@ git-tree-sha1 = "7d2f8f21da5db6a806faf7b9b292296da42b2810"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.3"
 
-[[deps.Pidfile]]
-deps = ["FileWatching", "Test"]
-git-tree-sha1 = "2d8aaf8ee10df53d0dfb9b8ee44ae7c04ced2b03"
-uuid = "fa939f87-e72e-5be4-a000-7fc836dbe307"
-version = "1.3.0"
-
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "Libdl"]
 git-tree-sha1 = "db76b1ecd5e9715f3d043cec13b2ec93ce015d53"
@@ -1643,24 +1591,6 @@ version = "0.8.21"
     [deps.PlotlyBase.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-    IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
-    JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
-
-[[deps.PlotlyJS]]
-deps = ["Base64", "Blink", "DelimitedFiles", "JSExpr", "JSON", "Kaleido_jll", "Markdown", "Pkg", "PlotlyBase", "PlotlyKaleido", "REPL", "Reexport", "Requires", "WebIO"]
-git-tree-sha1 = "287e092914da6c91f002aafcf82a2ec065bf94a3"
-uuid = "f0f68f2c-4968-5e81-91da-67840de0976a"
-version = "0.18.17"
-
-    [deps.PlotlyJS.extensions]
-    CSVExt = "CSV"
-    DataFramesExt = ["DataFrames", "CSV"]
-    IJuliaExt = "IJulia"
-    JSON3Ext = "JSON3"
-
-    [deps.PlotlyJS.weakdeps]
-    CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
     JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 
@@ -2104,18 +2034,6 @@ git-tree-sha1 = "96478df35bbc2f3e1e791bc7a3d0eeee559e60e9"
 uuid = "a2964d1f-97da-50d4-b82a-358c7fce9d89"
 version = "1.24.0+0"
 
-[[deps.WebIO]]
-deps = ["AssetRegistry", "Base64", "Distributed", "FunctionalCollections", "JSON", "Logging", "Observables", "Pkg", "Random", "Requires", "Sockets", "UUIDs", "WebSockets", "Widgets"]
-git-tree-sha1 = "0eef0765186f7452e52236fa42ca8c9b3c11c6e3"
-uuid = "0f1e0344-ec1d-5b48-a673-e5cf874b6c29"
-version = "0.8.21"
-
-[[deps.WebSockets]]
-deps = ["Base64", "Dates", "HTTP", "Logging", "Sockets"]
-git-tree-sha1 = "4162e95e05e79922e44b9952ccbc262832e4ad07"
-uuid = "104b5d7c-a370-577a-8038-80a2059c5097"
-version = "1.6.0"
-
 [[deps.Widgets]]
 deps = ["Colors", "Dates", "Observables", "OrderedCollections"]
 git-tree-sha1 = "e9aeb174f95385de31e70bd15fa066a505ea82b9"
@@ -2393,7 +2311,7 @@ version = "1.9.2+0"
 # ╟─b551c7b1-6f94-4a08-af35-8fb4a9d977d8
 # ╟─0430f448-4b12-44f2-b8e1-14b60ae6a184
 # ╠═ae041fa8-ac52-11f0-a8be-eb63a356988e
-# ╠═d34351b7-7e61-440e-8702-7c456628a075
+# ╠═e864c420-e5a4-4341-bd83-efd83c884029
 # ╠═6070ecde-6658-4563-8c58-1195c57fec07
 # ╟─a5d8d852-2bc4-40cb-820f-a7fb61564dd5
 # ╠═f6b33f16-6d0a-4688-a3e4-a93fca6a2d76
@@ -2478,6 +2396,8 @@ version = "1.9.2+0"
 # ╠═3072c253-3ec5-4213-aaa9-ee40577c29e1
 # ╟─e187d8d9-0143-4164-995a-88d353dafa50
 # ╠═34f8423d-bc53-4178-a080-23ff65c074ff
+# ╟─b1819cf6-72e6-430a-b965-01be95790608
+# ╟─b3585c8e-3458-4447-997b-c40dad1c367a
 # ╟─02cb55c3-64ba-4fc6-bb19-6e0f22e1cb3b
 # ╟─f7306e74-f76f-457c-84f4-360ba1983b61
 # ╟─00000000-0000-0000-0000-000000000001
