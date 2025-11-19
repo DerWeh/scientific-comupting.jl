@@ -62,7 +62,7 @@ Let's compare the analytic result to the newton solution:
 """
 
 # ╔═╡ 3c2abddb-8831-475d-83ac-06098d8763d9
-sqrt(π), newton(f, a)
+sqrt(a), newton(f, a)
 
 # ╔═╡ 0bc9a4bc-d85f-4216-88e2-8af0bf8bbe46
 md"""
@@ -83,11 +83,11 @@ Let's also compare the analytic evaluation of the derivative:
 """
 
 # ╔═╡ d1675218-5ecb-41ab-88a7-99c9aa4ea31d
-function analytic_newton(x0::AbstractFloat; backend=AutoForwardDiff())
+function analytic_newton(x0::AbstractFloat)
 	f(x) = x^2 - a
 	df(x) = 2x 
-	xprev = x0
-	x = xprev - f(xprev)/df(xprev)
+	x = x0 - f(x0)/df(x0)
+	xprev = typeof(x)(x0)
 	while abs(x - xprev) > 2eps(x0)
 		xprev = x
 		x = x - f(xprev)/df(xprev)
@@ -99,16 +99,17 @@ end
 tan = @benchmark analytic_newton(a)
 
 # ╔═╡ 2575758f-050e-4991-ad8b-dc2829f29b43
-if round(median(tn.times) / median(tan.times), digits=1) == 1.0
-	md"""
-	We are just as fast as the analytic derivative.
-	"""
-else
-	md"""
-	Something unexpected happened, we are
-	$(round(median(tn.times) / median(t0.times), digits=1))
-	times as fast as the analytic derivative.
-	"""
+begin
+	ratio = round(median(tn.times) / median(tan.times), digits=1)
+	if ratio == 1.0
+		md"""
+		We are just as fast as the analytic derivative.
+		"""
+	else
+		md"""
+		Something unexpected happened, we take $(ratio) times the time the analytic derivative takes.
+		"""
+	end
 end
 
 # ╔═╡ 73f9d472-4124-4bd4-8d74-c5baaa6db6a8
