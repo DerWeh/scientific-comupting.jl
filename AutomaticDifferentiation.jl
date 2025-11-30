@@ -283,9 +283,6 @@ md"""
 We can also inspect statistics:
 """
 
-# ╔═╡ 67f84fa7-1bb8-4924-8899-7ce24d7a4d3d
-sol.stats
-
 # ╔═╡ 7f12af26-fc96-4395-81e4-e8b1e532dd41
 s = sol.stats
 
