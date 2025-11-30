@@ -453,7 +453,7 @@ The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` o
 	g_{n+1} = \sqrt{a_n g_n}, \quad
 ```
 
-where `a_n` is the arithmetic mean of the previous results, and `g_n` the geometric mean of the previous results.
+where ``a_n`` is the arithmetic mean of the previous results, and ``g_n`` the geometric mean of the previous results.
 """
 
 # ╔═╡ ee3d0cec-08e1-4408-a995-a1a6198e608b

@@ -372,7 +372,7 @@ sol_newt.original
 
 # ╔═╡ 3d873b88-e2b1-4e9f-8a6b-8d86442916f5
 md"""
-## JuMP
+### JuMP.jl
 """
 
 # ╔═╡ 6da3ca9c-e856-44c6-b5c9-f147e4ed478a
@@ -439,7 +439,7 @@ We try to find the (global) minimum of the Rosenbrock function.
 
 According to [Wikipedia](https://en.wikipedia.org/wiki/Rosenbrock_function) this is a performance test for optimization algorithms.
 
-It is trivial to read off the global minimum ``f(x^*, y^*)=0`` with:
+For ``b ≥ 0``, it is trivial to read off the global minimum ``f(x^*, y^*)=0`` with:
 
 ```math
 	(x^*, y^*) = (a, a^2).
@@ -2570,7 +2570,7 @@ version = "1.9.2+0"
 # ╔═╡ Cell order:
 # ╟─8161afd4-7c0c-4d35-8993-eeffb053cc6b
 # ╠═e4ebc15a-bffc-11f0-ab4f-75ca00911295
-# ╠═adaf37be-7ef5-4a4e-aca8-de0b2998b2e4
+# ╟─adaf37be-7ef5-4a4e-aca8-de0b2998b2e4
 # ╟─121237c0-e83b-4e82-844e-b3734ca3c481
 # ╟─75af04c9-469e-4c5e-9fdd-322c33110f55
 # ╠═0ea739f2-906e-46dc-8ade-2bb39a4b24cc
@@ -2620,7 +2620,6 @@ version = "1.9.2+0"
 # ╟─a11ac683-f68a-41f1-87c3-b757d54d771e
 # ╠═f5ed7a06-d487-4f63-b97d-4f96476f1ed2
 # ╟─3ae7d6ab-aa9b-44db-85b4-ec0ed6d34dfc
-# ╠═67f84fa7-1bb8-4924-8899-7ce24d7a4d3d
 # ╠═7f12af26-fc96-4395-81e4-e8b1e532dd41
 # ╟─f8862ba8-6577-4da8-9347-c7464d4ba939
 # ╠═d066cbc6-c72d-4b62-a055-672ce12a00bc
@@ -2635,7 +2634,7 @@ version = "1.9.2+0"
 # ╟─a0187216-3f8e-45d7-98a8-05e351e950d5
 # ╠═ef12b792-6f5a-495b-bf68-04deefb001b3
 # ╟─2e434c66-571a-4fec-9f25-fd5fbf573ddc
-# ╠═66da90d5-e508-495c-95eb-0c4467fe4f37
+# ╟─66da90d5-e508-495c-95eb-0c4467fe4f37
 # ╠═4c74ece6-9b5c-4ad9-86ef-470420b6b6dc
 # ╠═07492ced-61dc-4ed5-bf01-7038be900a62
 # ╠═f084189a-d57b-44b5-80d8-9f9e47ca1668
@@ -2650,7 +2649,7 @@ version = "1.9.2+0"
 # ╠═d02db7b8-587c-4c4e-8d46-21585a359162
 # ╠═b84b2041-0f8d-4eb8-8dd5-2538adbf7c1c
 # ╠═9c871258-218d-492c-bfb3-c235db3409e2
-# ╠═0c7a98d8-d758-4ea8-92cd-ec20e3bbfcef
+# ╟─0c7a98d8-d758-4ea8-92cd-ec20e3bbfcef
 # ╟─d67a142d-e2ac-409e-9118-903e8fe8b8af
 # ╟─43fefdf9-5a4b-468a-a2bd-906c446329dc
 # ╟─5e923e44-056b-45d4-a621-eb8bfad10079
