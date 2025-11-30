@@ -133,7 +133,7 @@ end
 # ╔═╡ 162800f3-c354-4ea6-8259-aabe1605178c
 md"""
 Other numbers are simply converted to `Dual` numbers of appropriate type.
-The default constructor `Dual(x)` is defined such that reagualar numbers get `dx = 0`.
+The default constructor `Dual(x)` is defined such that regular numbers get `dx = 0`.
 """
 
 # ╔═╡ 81ed17a9-d183-47b0-a4c7-593346ebf05e
