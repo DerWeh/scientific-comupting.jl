@@ -133,7 +133,7 @@ begin
 	promote_rule(::Type{Dual{T1}}, ::Type{Dual{T2}}) where {T1<:Number, T2<:Number} =
 		Dual{promote_rule(T1, T2)}
 	# extensions for symbols, never do this in packages, this is type piracy!!!
-	# type priacy = extending functions we do not own by types we do not own
+	# type piracy = extending functions we do not own by types we do not own
 	promote_rule(::Type{Num}, ::Type{<:Number}) = Num
 end
 
@@ -202,7 +202,7 @@ Base.:+(a::Dual, b::Dual) = Dual(a.x + b.x, a.dx + b.dx)
 
 # ╔═╡ bea2fffb-e2d6-4f34-8a0a-9d632d5a12bd
 md"""
-Now that we told Julia how to add dual numbers, we can get derivative of slightly more complex expressions:
+Now that we told Julia how to add dual numbers, we can get derivatives of slightly more complex expressions:
 """
 
 # ╔═╡ c3c7fd11-7f6e-48ad-bbbd-822bf3665248
@@ -407,8 +407,8 @@ But for comparisons, we have to restrict `Number` to `Real`.
 
 # ╔═╡ 1aba3e89-98e6-42d6-9fdc-1256e99898f7
 begin
-	# isless is not an arimetic operation, explicit overloads are necessary
-	# But it is enought to implement `<` to get comparisons
+	# isless is not an arithmetic operation, explicit overloads are necessary
+	# But it is enough to implement `<` to get comparisons
 	import Base: <
 	<(a::Dual{T1}, b::Dual{T2}) where {T1<:Real, T2<:Real} = a.x < b.x
 	<(a::Real, b::Dual{<:Real}) = a < b.x
