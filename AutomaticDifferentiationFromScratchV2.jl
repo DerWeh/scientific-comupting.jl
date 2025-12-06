@@ -315,7 +315,7 @@ end
 # Now we get more tricky derivatives, you might need pen and paper.
 Base.:^(a::Dual, b::Dual) = Dual(
 	a.x^b.x,
-	b.x * a.x^(b.x-1) * a.dx + a.x^b.x * log(a.x) * b.dx
+	(b.x * a.x^(b.x-1) * a.dx) + (a.x^b.x * log(a.x) * b.dx)
 )
 
 # ╔═╡ 0bedb30e-27c2-4552-bb02-9585ac64facf
