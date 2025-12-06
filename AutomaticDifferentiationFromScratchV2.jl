@@ -1,6 +1,13 @@
 ### A Pluto.jl notebook ###
 # v0.20.21
 
+#> [frontmatter]
+#> title = "Automatic Differentiation from Scratch"
+#> description = "Naive but educational implementation of automatic differentiation."
+#> 
+#>     [[frontmatter.author]]
+#>     name = "Andreas Weh"
+
 using Markdown
 using InteractiveUtils
 
