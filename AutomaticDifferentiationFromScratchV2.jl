@@ -30,7 +30,7 @@ But let's first start out with the traditional approaches and their limitations.
 
 # ╔═╡ 1d9e9278-4dcd-4a22-a3ff-2a0d5426e4c1
 md"""
-## Finite differences
+# Finite differences
 
 Let's start with the school book definition of a derivative:
 
@@ -62,7 +62,7 @@ numerically it's the other way around: integrating is quite simple while differe
 
 # ╔═╡ 2eb2e25c-df4b-4059-8395-c1fab6400bdf
 md"""
-## Symbolic differentiation
+# Symbolic differentiation
 
 Symbolic differentiation calculates the analytic derivative of functions using symbolic computation.
 This is like the pen-and-paper version of doing derivatives.
@@ -89,7 +89,7 @@ Especially as soon as branches and loops get involved, symbolic differentiation 
 
 # ╔═╡ 2c41d052-6f0a-40af-be12-6f193b24b971
 md"""
-## Automatic differentiation
+# Automatic differentiation
 
 Automatic differentiation is the modern solution: We evaluate the derivative along with the function without building the function graph.
 
