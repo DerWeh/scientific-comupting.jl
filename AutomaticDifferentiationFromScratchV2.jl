@@ -711,7 +711,7 @@ end
 # ╔═╡ 76d32953-18d5-4c76-bd84-93d92d74ff12
 backprop_rule(::typeof(sum), x) = (
 	sum(x),
-	y_cotangent -> y_cotangent * ones(eltype(x), size(x)),
+	y_cotangent -> y_cotangent .* ones(eltype(x), size(x)),
 )
 
 # ╔═╡ 7a4dbbb7-364e-43a7-a101-089d76909940
@@ -771,13 +771,7 @@ function vjp(chain, primal)
 		push!(pullback_stack, current_pullback)
 	end
 
-	function pullback(cotangent)
-		current_cotangent = cotangent
-		for back in Iterators.reverse(pullback_stack)
-			current_cotangent = back(current_cotangent)
-		end
-		return current_cotangent
-	end
+	pullback = foldl(∘, Iterators.reverse(pullback_stack))
 
 	return current_value, pullback
 end
