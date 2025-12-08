@@ -671,11 +671,10 @@ fc₂(x) = x .|> [sin, cos] |> sum
 
 # ╔═╡ 90323fe7-95ae-4bf7-886c-bd4d1e841977
 md"""
-Again, we have to implement the rules, how to the derivative of components[^1] is implemented.
 This time, we implement the derivates as partials.
+Again, we have to implement the rules, how to the derivative of components is implemented.
 In a forward pass, we evaluate the function and keep track of the derivates.
 
-[^1]: Note, that the type of broadcasted functions (`.^`) and 'regular' functions (`^`) differs.
 """
 
 # ╔═╡ 31baf208-f046-4268-9d0d-abe949e18185
@@ -721,6 +720,7 @@ Julia offers the type [Base.Fix2](https://docs.julialang.org/en/v1/base/base/#Ba
 """
 
 # ╔═╡ 09430718-554e-417c-a50f-bf5def44cf92
+# Note, that the type of broadcasted functions (`.^`) and 'regular' functions (`^`) differs.
 backprop_rule(power::Base.Fix2{typeof(.^)}, x) = (
 	power(x),
 	y_cotangent -> @.(y_cotangent * power.x * x^(power.x-1)),
