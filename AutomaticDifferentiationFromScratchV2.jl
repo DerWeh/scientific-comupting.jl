@@ -632,15 +632,48 @@ Let's consider a simple example function:
 
 # ╔═╡ 9e71416f-6b24-4cc8-ab9a-666c4efb06f6
 md"""
-**TODO** chain of functions
+It is instructive to consider a chain of functions
+```math
+	y = f ∘ g ∘ h
+```
+The derivative writes
+```math
+	\frac{∂ y(x)}{∂x}
+	= \frac{∂ f(w_2)}{∂w_2}
+	\frac{∂ g(w_1)}{∂w_1}
+	\frac{∂ h(w_0)}{∂w_0}
+	\frac{∂ x}{∂x}
+```
+where ``w_0=x``, ``w_1 = h(w_0)``, ``w_2 = g(w_1)``, and ``w_3 = f(w_2) = y(x)``.
+Or writing the derivative just in terms of weights
+```math
+	\frac{∂y}{∂x}
+    = \frac{∂y}{∂w_3}
+    \frac{∂w_3}{∂w_2}
+    \frac{∂w_2}{∂w_1}
+    \frac{∂w_1}{∂w_0}
+    \frac{∂w_0}{∂x}.
+```
+Forward mode AD iterates the expression in the natural order, from right to left, starting with ``\frac{∂w_0}{∂x} \stackrel{!}{=} 1``.
+Thus, the derivate can be expressed as the recursion relation
+```math
+	\frac{∂w_i}{∂x} = \frac{∂w_{i}}{∂w_{i-1}}\frac{∂w_{i-1}}{∂x}.
+```
 """
 
 # ╔═╡ 90945cd0-2e82-454b-a331-d6eb086a4eaa
 md"""
 In optimization problems, typically a scalar $m=1$ loss functions is optimized.
 In this case, *reverse mode* automatic differentiation, also called *adjoint mode*, is more efficient.
-It callculats a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring $m$ weeps for the full Jacobian.
-However, reverse mode mode AD typically caches intermediate results for performance requiring a large amount of memory.
+It calculates a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring $m$ weeps for the full Jacobian.
+However, reverse mode AD typically caches intermediate results for performance requiring a large amount of memory.
+
+In reverse mode AD, we traverse the function chain in the opposite direction, from left to right, starting with ``\frac{∂y}{∂w_3} \stackrel{!}{=} 1``.
+However, this requires first a forward pass, right to left, to evaluate the weights ``w_i``, as this are the points where the derivatives are evaluated, e.g., ``f'(w_2)``.
+Next, the derivates are propagated backwards using the recursion relation
+```math
+	\frac{∂y}{∂w_i} = \frac{∂y}{∂w_{i+1}} \frac{∂w_{i+1}}{∂w_i}.
+```
 """
 
 # ╔═╡ c8b4ea9e-3ca0-4f14-9da8-b151da80e963
@@ -2034,7 +2067,7 @@ version = "17.7.0+0"
 # ╟─43d746dd-85d9-4037-87b8-530a01a7af84
 # ╠═96514cb6-da73-4395-a9b5-0cb7009a335c
 # ╠═77cefb40-3281-49d7-9589-67d6cab4bb7d
-# ╠═9e71416f-6b24-4cc8-ab9a-666c4efb06f6
+# ╟─9e71416f-6b24-4cc8-ab9a-666c4efb06f6
 # ╟─90945cd0-2e82-454b-a331-d6eb086a4eaa
 # ╟─c8b4ea9e-3ca0-4f14-9da8-b151da80e963
 # ╠═d91001cd-e0ea-4622-a875-67c829504ed1
