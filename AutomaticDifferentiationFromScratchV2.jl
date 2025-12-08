@@ -589,6 +589,261 @@ md"""
 Here we won't go into further detail and rather refer to [DifferentiationInterface](https://juliadiff.org/DifferentiationInterface.jl/DifferentiationInterface/stable/) which provides a common AD interface for many backends, that are usable for real code.
 """
 
+# ╔═╡ 43d746dd-85d9-4037-87b8-530a01a7af84
+md"""
+## Forward vs. reverse mode
+
+The dual number approach we used is a *forward mode* automatic differentiation, also called *tangent mode*.
+We push the (augmented) inputs through the function in the same order we evaluate the functions.
+It is very natural to implement, but for a function 
+```math
+	f: \mathbb{R}^n -> \mathbb{R}^m
+```
+we need $n$ sweeps.
+Each sweep generates one column of the Jacobian matrix
+```math
+	\boldsymbol{J}_{\boldsymbol{f}}
+	\coloneqq \begin{pmatrix}
+		\frac{\partial\boldsymbol{f}}{\partial x_1}
+		& \dots
+		& \frac{\partial\boldsymbol{f}}{\partial x_n}
+	\end{pmatrix}
+	= \begin{pmatrix}
+		\boldsymbol{\nabla}^\mathsf{T} f_1
+		\\ \vdots
+		\\ \boldsymbol{\nabla}^\mathsf{T} f_m
+	\end{pmatrix}.
+```
+
+Let's consider a simple example function:
+"""
+
+# ╔═╡ 96514cb6-da73-4395-a9b5-0cb7009a335c
+𝐟(x) = [
+	exp(inv(sqrt(x[1]^2 + x[2]^2))),
+	sin(x[1]) + cos(x[2])
+]
+
+# ╔═╡ 77cefb40-3281-49d7-9589-67d6cab4bb7d
+(
+	∂𝐟_∂α=derivative.(𝐟([Dual(α, Num(1)), Dual(β, Num(0))])),
+	∂𝐟_∂β=derivative.(𝐟([Dual(α, Num(0)), Dual(β, Num(1))])),
+)
+
+# ╔═╡ 9e71416f-6b24-4cc8-ab9a-666c4efb06f6
+md"""
+**TODO** chain of functions
+"""
+
+# ╔═╡ 90945cd0-2e82-454b-a331-d6eb086a4eaa
+md"""
+In optimization problems, typically a scalar $m=1$ loss functions is optimized.
+In this case, *reverse mode* automatic differentiation, also called *adjoint mode*, is more efficient.
+It callculats a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring $m$ weeps for the full Jacobian.
+However, reverse mode mode AD typically caches intermediate results for performance requiring a large amount of memory.
+"""
+
+# ╔═╡ c8b4ea9e-3ca0-4f14-9da8-b151da80e963
+md"""
+### Naive reverse mode
+
+As a general reverse mode AD is rather involved, we restrict ourselves to functions that can be represented chains of vectorized functions.
+
+Thus, we rewrite the function ``\boldsymbol{f}`` in suitable form:
+"""
+
+# ╔═╡ d91001cd-e0ea-4622-a875-67c829504ed1
+f₁(x) = exp(inv(sqrt(sum(x.^2))))
+
+# ╔═╡ 47a14108-3b71-4615-8c10-48b59d661b4e
+f₂(x) = sum(x .|> [sin, cos])
+
+# ╔═╡ 4965d1d9-dc51-43b6-b082-cb13a2791c56
+md"""
+Or making the chain structure obvious:
+"""
+
+# ╔═╡ 172c01e6-45f1-4134-8e59-5b17dd6ac046
+fc₁(x) = x .|> (x -> x^2) |> sum |> sqrt |> inv |> exp
+
+# ╔═╡ 040d5030-6a8f-4aa2-adf8-32f601fb8290
+fc₂(x) = x .|> [sin, cos] |> sum
+
+# ╔═╡ 90323fe7-95ae-4bf7-886c-bd4d1e841977
+md"""
+Again, we have to implement the rules, how to the derivative of components[^1] is implemented.
+This time, we implement the derivates as partials.
+In a forward pass, we evaluate the function and keep track of the derivates.
+
+[^1]: Note, that the type of broadcasted functions (`.^`) and 'regular' functions (`^`) differs.
+"""
+
+# ╔═╡ 31baf208-f046-4268-9d0d-abe949e18185
+backprop_rule(::typeof(sin), x) = (  # y = sin(x)
+	sin(x),  # y, result for forward pass
+	y_cotangent -> y_cotangent * cos(x),  # cotangent of x
+)
+
+# ╔═╡ 535fd135-23ff-4b9a-ac2e-98fbc69c3b8e
+backprop_rule(::typeof(cos), x) = (
+	cos(x),  # y, result for forward pass
+	y_cotangent -> y_cotangent * -sin(x),  # cotangent of x
+)
+
+# ╔═╡ 2473c1f7-f544-4aa8-b237-e559efe15322
+function backprop_rule(::typeof(exp), x)
+	y = exp(x)  # reuse pre-computed y
+	return (y, y_cotangent -> y_cotangent * y)
+end
+
+# ╔═╡ 81c58a37-44e5-4fbe-92b1-6a08a64e1984
+function backprop_rule(::typeof(sqrt), x)
+	y = sqrt(x)  # reuse pre-computed y
+	return (y, y_cotangent -> y_cotangent * inv(2y))
+end
+
+# ╔═╡ 7fda07dc-6adc-49d6-ba47-7c70ee30b1c7
+function backprop_rule(::typeof(inv), x)
+	y = inv(x);  # reuse pre-computed y
+	return (y, y_cotangent -> y_cotangent * -y^2)
+end
+
+# ╔═╡ 76d32953-18d5-4c76-bd84-93d92d74ff12
+backprop_rule(::typeof(sum), x) = (
+	sum(x),
+	y_cotangent -> y_cotangent * ones(eltype(x), size(x)),
+)
+
+# ╔═╡ 7a4dbbb7-364e-43a7-a101-089d76909940
+md"""
+For the rest of the functions, we require an argument.
+Julia offers the type [Base.Fix2](https://docs.julialang.org/en/v1/base/base/#Base.Fix2) to handle this in a compiler friendly and therefore efficient way.
+"""
+
+# ╔═╡ 09430718-554e-417c-a50f-bf5def44cf92
+backprop_rule(power::Base.Fix2{typeof(.^)}, x) = (
+	power(x),
+	y_cotangent -> @.(y_cotangent * power.x * x^(power.x-1)),
+)
+
+# ╔═╡ ece7a8ed-0132-4ff1-86f2-7a6b99c27673
+function backprop_rule(transform::Base.Fix2{typeof(.|>), Vector{Function}}, x)
+	# recursively call backpropagation for all functions
+	y = similar(x)
+	dy = similar(x)
+	for idx in eachindex(transform.x)
+		idx, y[idx], x[idx], transform.x[idx]
+		y[idx], backprop = backprop_rule(transform.x[idx], x[idx])
+		dy[idx] = backprop(1)
+	end
+	
+	transform(x),
+	y_cotangent -> y_cotangent .* dy 
+end
+
+# ╔═╡ 93bb08ff-f898-406a-a816-36dafb2102bb
+function backprop_rule(transform::Base.Fix2{typeof(|>), Vector{Function}}, x)
+	# recursively call backpropagation for all functions
+	y = similar(x)
+	dy = similar(x)
+	for idx in eachindex(transform.x)
+		y[idx], backprop = backprop_rule(transform.x[idx], x[idx])
+		dy[idx] = backprop(1)
+	end
+	
+	transform(x),
+	y_cotangent -> y_cotangent .* dy 
+end
+
+# ╔═╡ d1a92d12-d6d1-4ceb-b1f3-b46d1f1ba739
+md"""
+Now that we have implemented all rules, we can calculate the AD engine.
+In reverse mode, we can only calculate one row of the Jacobian matrix, i.e. the gradient of one component of our function, at a time.
+Thus, we provide an engine to calculate a vector-Jacobian product ``\boldsymbol{vJ}_\boldsymbol{f}``.
+"""
+
+# ╔═╡ 1b576adc-3b3e-4502-aaec-58b09ab3df2f
+function vjp(chain, primal)
+	pullback_stack = Function[]  # could be pre-allocated
+	current_value = primal
+	for operation in chain
+		current_value, current_pullback = backprop_rule(operation, current_value)
+		push!(pullback_stack, current_pullback)
+	end
+
+	function pullback(cotangent)
+		current_cotangent = cotangent
+		for back in Iterators.reverse(pullback_stack)
+			current_cotangent = back(current_cotangent)
+		end
+		return current_cotangent
+	end
+
+	return current_value, pullback
+end
+
+# ╔═╡ b966b19f-f924-41ed-bfc0-75ce606f6f95
+md"""
+To use the `vjp` function, we need the input function as graph (in our case a simple chain) of functions.
+This graph can be extracted using Julia's excellent [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/) capabilities inspired by [Lisp](https://de.wikipedia.org/wiki/Lisp).
+However, this is an advanced technique and way out of the scope of this notebook.
+Thus, we specify the corresponding graph by hand.
+"""
+
+# ╔═╡ e8ebe050-f435-4d9d-8cbb-8f74b4f6ea1c
+f₁_chain = [Base.Fix2(.^, 2), sum, sqrt, inv, exp]
+
+# ╔═╡ 13036f07-caf0-431b-94ac-88a8ab1dfa78
+f₂_chain = [Base.Fix2(.|>, [sin, cos]), sum]
+
+# ╔═╡ ccb9d123-6998-4496-bebf-1b29163f3d75
+md"""
+Within our simplified version, there is no way to combine the chains for each component into a single chain[^2]
+
+[^2]: As least, nothing comes to my mind.
+      Please let me know if there is a simple option.
+      The other direction is trivial: you can create the function using
+      `foldl(∘, reverse(chain))`.
+"""
+
+# ╔═╡ d64b1bf3-b9e3-43ac-a204-c73664178a69
+md"""
+Let's compare the results of forward and backward mode AD.
+For convenience, we define the high-level interface:
+"""
+
+# ╔═╡ 6a359e1a-d973-4bef-a195-8b8a765f9b85
+function value_and_gradient(chain, x)
+	y, pullback = vjp(chain, x)
+	return y, pullback(one(eltype(x)))
+end
+
+# ╔═╡ 9f4954ad-412a-40ff-983a-777a317761c3
+𝐱 = [0.7, 0.3]
+
+# ╔═╡ c23471cc-ca10-4f28-ad57-20bf2e04072d
+value_and_gradient(f₁_chain, 𝐱)
+
+# ╔═╡ 1941f83c-6370-44c4-99f2-2ba024f91b90
+value_and_gradient(f₂_chain, 𝐱)
+
+# ╔═╡ c1c78c92-99a9-4c64-bf71-9de9fb442497
+(
+	∂𝐟_∂α=derivative.(𝐟([Dual(𝐱[1], 1.0), Dual(𝐱[2], 0.0)])),
+	∂𝐟_∂β=derivative.(𝐟([Dual(𝐱[1], 0.0), Dual(𝐱[2], 1.0)])),
+)
+
+# ╔═╡ 596d35e4-1aa1-4707-a7f8-1426e947f798
+md"""
+And for reference the symbolic solution:
+"""
+
+# ╔═╡ d05c64c4-9388-41d7-8bc7-fc3ece439088
+(
+	∂𝐟_∂α=derivative.(𝐟([Dual(α, Num(1)), Dual(β, Num(0))])),
+	∂𝐟_∂β=derivative.(𝐟([Dual(α, Num(0)), Dual(β, Num(1))])),
+)
+
 # ╔═╡ 4d436b91-06dc-462b-a2e2-f8704d50d37a
 TableOfContents()
 
@@ -1782,6 +2037,42 @@ version = "17.7.0+0"
 # ╟─54ca2866-7cea-4c90-978c-e7a1031fc6ec
 # ╠═8ccdf71e-3c2f-45fa-afb0-67dadeba12da
 # ╟─731769df-3a74-41b3-81a8-1ae226d4bb29
+# ╟─43d746dd-85d9-4037-87b8-530a01a7af84
+# ╠═96514cb6-da73-4395-a9b5-0cb7009a335c
+# ╠═77cefb40-3281-49d7-9589-67d6cab4bb7d
+# ╠═9e71416f-6b24-4cc8-ab9a-666c4efb06f6
+# ╟─90945cd0-2e82-454b-a331-d6eb086a4eaa
+# ╟─c8b4ea9e-3ca0-4f14-9da8-b151da80e963
+# ╠═d91001cd-e0ea-4622-a875-67c829504ed1
+# ╠═47a14108-3b71-4615-8c10-48b59d661b4e
+# ╟─4965d1d9-dc51-43b6-b082-cb13a2791c56
+# ╠═172c01e6-45f1-4134-8e59-5b17dd6ac046
+# ╠═040d5030-6a8f-4aa2-adf8-32f601fb8290
+# ╟─90323fe7-95ae-4bf7-886c-bd4d1e841977
+# ╠═31baf208-f046-4268-9d0d-abe949e18185
+# ╠═535fd135-23ff-4b9a-ac2e-98fbc69c3b8e
+# ╠═2473c1f7-f544-4aa8-b237-e559efe15322
+# ╠═81c58a37-44e5-4fbe-92b1-6a08a64e1984
+# ╠═7fda07dc-6adc-49d6-ba47-7c70ee30b1c7
+# ╠═76d32953-18d5-4c76-bd84-93d92d74ff12
+# ╟─7a4dbbb7-364e-43a7-a101-089d76909940
+# ╠═09430718-554e-417c-a50f-bf5def44cf92
+# ╠═ece7a8ed-0132-4ff1-86f2-7a6b99c27673
+# ╠═93bb08ff-f898-406a-a816-36dafb2102bb
+# ╟─d1a92d12-d6d1-4ceb-b1f3-b46d1f1ba739
+# ╠═1b576adc-3b3e-4502-aaec-58b09ab3df2f
+# ╟─b966b19f-f924-41ed-bfc0-75ce606f6f95
+# ╠═e8ebe050-f435-4d9d-8cbb-8f74b4f6ea1c
+# ╠═13036f07-caf0-431b-94ac-88a8ab1dfa78
+# ╟─ccb9d123-6998-4496-bebf-1b29163f3d75
+# ╟─d64b1bf3-b9e3-43ac-a204-c73664178a69
+# ╠═6a359e1a-d973-4bef-a195-8b8a765f9b85
+# ╠═9f4954ad-412a-40ff-983a-777a317761c3
+# ╠═c23471cc-ca10-4f28-ad57-20bf2e04072d
+# ╠═1941f83c-6370-44c4-99f2-2ba024f91b90
+# ╠═c1c78c92-99a9-4c64-bf71-9de9fb442497
+# ╟─596d35e4-1aa1-4707-a7f8-1426e947f798
+# ╠═d05c64c4-9388-41d7-8bc7-fc3ece439088
 # ╟─6cd9539e-c4e0-4333-af8f-292e47cc539b
 # ╟─4d436b91-06dc-462b-a2e2-f8704d50d37a
 # ╟─00000000-0000-0000-0000-000000000001
