@@ -704,10 +704,12 @@ fc₂(x) = x .|> [sin, cos] |> sum
 
 # ╔═╡ 90323fe7-95ae-4bf7-886c-bd4d1e841977
 md"""
-This time, we implement the derivates as partials.
 Again, we have to implement the rules, how to the derivative of components is implemented.
+This time, we implement the derivates as closures[^1].
 In a forward pass, we evaluate the function and keep track of the derivates.
 
+[^1]: This is not really compiler friendly.
+      Creating a `tape` structure and working with overloads should be more efficient.
 """
 
 # ╔═╡ 31baf208-f046-4268-9d0d-abe949e18185
