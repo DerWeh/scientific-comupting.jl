@@ -666,11 +666,11 @@ md"""
 In optimization problems, typically a scalar $m=1$ loss functions is optimized.
 In this case, *reverse mode* automatic differentiation, also called *adjoint mode*, is more efficient.
 It calculates a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring $m$ weeps for the full Jacobian.
-However, reverse mode AD typically caches intermediate results for performance requiring a large amount of memory.
+However, reverse mode AD typically caches intermediate results for performance, requiring a large amount of memory.
 
 In reverse mode AD, we traverse the function chain in the opposite direction, from left to right, starting with ``\frac{∂y}{∂w_3} \stackrel{!}{=} 1``.
-However, this requires first a forward pass, right to left, to evaluate the weights ``w_i``, as this are the points where the derivatives are evaluated, e.g., ``f'(w_2)``.
-Next, the derivates are propagated backwards using the recursion relation
+However, this requires first a forward pass, right to left, to evaluate the weights ``w_i``, as these are the points where the derivatives are evaluated, e.g., ``f'(w_2)``.
+Next, the derivatives are propagated backwards using the recursion relation
 ```math
 	\frac{∂y}{∂w_i} = \frac{∂y}{∂w_{i+1}} \frac{∂w_{i+1}}{∂w_i}.
 ```
@@ -680,7 +680,8 @@ Next, the derivates are propagated backwards using the recursion relation
 md"""
 ### Naive reverse mode
 
-As a general reverse mode AD is rather involved, we restrict ourselves to functions that can be represented chains of vectorized functions.
+A general implementation of reverse mode AD is rather involved;
+thus, we restrict ourselves to functions that can be represented by chains of vectorized functions.
 
 Thus, we rewrite the function ``\boldsymbol{f}`` in suitable form:
 """
@@ -704,7 +705,7 @@ fc₂(x) = x .|> [sin, cos] |> sum
 
 # ╔═╡ 90323fe7-95ae-4bf7-886c-bd4d1e841977
 md"""
-Again, we have to implement the rules, how to the derivative of components is implemented.
+Again, we have to implement the rules, what the derivative of each individual component is.
 This time, we implement the derivates as closures[^1].
 In a forward pass, we evaluate the function and keep track of the derivates.
 
@@ -793,7 +794,7 @@ end
 # ╔═╡ d1a92d12-d6d1-4ceb-b1f3-b46d1f1ba739
 md"""
 Now that we have implemented all rules, we can calculate the AD engine.
-In reverse mode, we can only calculate one row of the Jacobian matrix, i.e. the gradient of one component of our function, at a time.
+In reverse mode, we can only calculate one row of the Jacobian matrix, i.e., the gradient of one component of our function, at a time.
 Thus, we provide an engine to calculate a vector-Jacobian product ``\boldsymbol{vJ}_\boldsymbol{f}``.
 """
 
