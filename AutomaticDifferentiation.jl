@@ -50,7 +50,7 @@ Let's consider some applications of AD.
 
 # ╔═╡ 121237c0-e83b-4e82-844e-b3734ca3c481
 md"""
-## Newton's method
+# Newton's method
 """
 
 # ╔═╡ 75af04c9-469e-4c5e-9fdd-322c33110f55
@@ -157,12 +157,12 @@ end
 
 # ╔═╡ 69d79a3a-2311-4f7b-b6b9-4820e08dcbff
 md"""
-## Optimization
+# Optimization
 """
 
 # ╔═╡ ad2d0e95-f014-42ef-aa6e-37f26c908b9c
 md"""
-### The Rosenbrock function
+## The Rosenbrock function
 """
 
 # ╔═╡ 46ea6716-8ee4-468e-ab45-b6071ca6115d
@@ -186,7 +186,7 @@ And a 3D view of the function itself, in case it helps (use `plotly()` for inter
 
 # ╔═╡ 63de7b66-6831-4cca-9a97-ec760540d701
 md"""
-### Optimization.jl
+## Optimization.jl
 """
 
 # ╔═╡ 666400b4-aff7-4b80-a83a-ed27f7a463c4
@@ -376,7 +376,7 @@ sol_newt.original
 
 # ╔═╡ 3d873b88-e2b1-4e9f-8a6b-8d86442916f5
 md"""
-### JuMP.jl
+## JuMP.jl
 """
 
 # ╔═╡ 6da3ca9c-e856-44c6-b5c9-f147e4ed478a
