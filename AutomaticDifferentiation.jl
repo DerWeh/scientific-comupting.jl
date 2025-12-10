@@ -36,9 +36,11 @@ md"""
 # Automatic Differentiation
 
 While implementing automatic differentiation yourself is a nice pedagogical exercise, for real applications we rely on Julia's range of excellent AD libraries with their respective strengths.
-[DifferentationInterface](https://juliadiff.org/DifferentiationInterface.jl/DifferentiationInterface/stable/) provides a unified interface to most AD libraries, allowing to easily switching them out (though depending on the library it will be slower than direct calls).
+[DifferentiationInterface](https://juliadiff.org/DifferentiationInterface.jl/DifferentiationInterface/stable/) provides a unified interface to most AD libraries,
+allowing easily switching them out (though depending on the library, it will be slower than direct calls).
 
-Here, we use [ForwardDiff](https://juliadiff.org/ForwardDiff.jl/dev/) with broad support for pure Julia code. (For Deep Learning, you'll probably want to start with [Zygote](https://fluxml.ai/Zygote.jl/dev/))
+Here, we use [ForwardDiff](https://juliadiff.org/ForwardDiff.jl/dev/) with broad support for pure Julia code.
+(For deep learning, you'll probably want to start with [Zygote](https://fluxml.ai/Zygote.jl/dev/).)
 """
 
 # ╔═╡ adaf37be-7ef5-4a4e-aca8-de0b2998b2e4
@@ -96,7 +98,7 @@ end
 
 # ╔═╡ 9dc59b46-0ef7-43cb-a9bb-0332469f0021
 md"""
-Let's compare the analytic result to the newton solution:
+Let's compare the analytic result to the Newton solution:
 """
 
 # ╔═╡ 3c2abddb-8831-475d-83ac-06098d8763d9
@@ -145,7 +147,7 @@ begin
 		"""
 	else
 		md"""
-		Something unexpected happened, we take $(ratio) times the time the analytic derivative takes.
+		Something unexpected happened; we take $(ratio) times the time the analytic derivative takes.
 		"""
 	end
 end
@@ -224,7 +226,9 @@ optf = OptimizationFunction(rosenbrock)
 
 # ╔═╡ 045f8fb7-f5bf-45f6-ba30-b1f47d6f2dd2
 md"""
-While it seems rather pointless for now, inspecting the `OptimizationFunction`, we see that we can specify additional information like gradients, Hessians or constrains.
+While it seems rather pointless for now,
+inspecting the `OptimizationFunction`,
+we see that we can specify additional information like gradients, Hessians, or constraints.
 
 We further need to define the parameter vector:
 """
@@ -250,7 +254,7 @@ prob = OptimizationProblem(optf, x0, _p)
 
 # ╔═╡ f9a6d91f-ae7a-48cd-96e8-b92a3ed2bbf7
 md"""
-The last ingredient is selecting an solver.
+The last ingredient is selecting a solver.
 We use the [Optim.jl](https://julianlsolvers.github.io/Optim.jl/stable/) package, which provides pure Julia implementations of several solvers.
 """
 
@@ -261,7 +265,7 @@ md"""
 
 # ╔═╡ 48599fe2-a4ea-4c46-b7af-3243f72f8fe8
 md"""
-We'll start with a gradient free solver:
+We'll start with a gradient-free solver:
 """
 
 # ╔═╡ 3f66cdd8-269f-41ff-b41b-477fc2929fb5
@@ -303,7 +307,7 @@ md"""
 
 # ╔═╡ 1b6a178c-323c-4998-b008-895c56bdbb48
 md"""
-Automatic differentiation provides efficient access to gradient based solvers.
+Automatic differentiation provides efficient access to gradient-based solvers.
 We just need to tell the optimization function to use `ForwardDiff` to automatically get gradients:
 """
 
@@ -329,7 +333,7 @@ sol_bfgs.u
 
 # ╔═╡ a0187216-3f8e-45d7-98a8-05e351e950d5
 md"""
-This time, we found the excat solution.
+This time, we found the exact solution.
 
 We took $(sol_bfgs.stats.iterations) iterations, which took us $(round(sol_bfgs.stats.time, sigdigits=2)) seconds and $(sol_bfgs.stats.fevals) function evaluations as well as $(sol_bfgs.stats.gevals) gradient evaluations.
 """
@@ -344,9 +348,9 @@ md"""
 
 # ╔═╡ 66da90d5-e508-495c-95eb-0c4467fe4f37
 md"""
-With add, we can readily use a higher order solver:[^1]
+With AD, we can readily use a higher-order solver:[^1]
 
-[^1]: Efficient Hessians become a bit tricky, that's why we get a warning.
+[^1]: Efficient Hessians become a bit tricky; that's why we get a warning.
       See the [discussion in the Julia forum](https://discourse.julialang.org/t/second-order-autodiff-which-combinations-should-work/114892/14).
       `SecondOrder(AutoEnzyme(), AutoForwardDiff())` seems to be a good choice.
 """
@@ -362,7 +366,7 @@ sol_newt.u
 
 # ╔═╡ afdaec9d-93c1-4dbd-a7bc-bfdfc5be5d07
 md"""
-Again, we found the excat solution.
+Again, we found the exact solution.
 
 We took $(sol_newt.stats.iterations) iterations, which took us $(round(sol_newt.stats.time, sigdigits=2)) seconds and $(sol_newt.stats.fevals) function evaluations, $(sol_newt.stats.gevals) gradient evaluations, and $(sol_newt.stats.hevals) Hessian evaluations.
 """
@@ -377,8 +381,9 @@ md"""
 
 # ╔═╡ 6da3ca9c-e856-44c6-b5c9-f147e4ed478a
 md"""
-For serious optimization, there is also the excellent `JuMP` package providing a domain specific language for optimization in Julia.
-This is way beyond this tutorial, so just check out its [documentation](https://jump.dev/JuMP.jl/stable/tutorials/getting_started/getting_started_with_JuMP/#Getting-started-with-JuMP).
+For serious optimization, there is also the excellent `JuMP` package providing a domain-specific language for optimization in Julia.
+This is beyond the scope of this tutorial, so just check out its [documentation](https://jump.dev/JuMP.jl/stable/tutorials/getting_started/getting_started_with_JuMP/#Getting-started-with-JuMP),
+including the section [when to use JuMP](https://jump.dev/JuMP.jl/stable/should_i_use/).
 
 `JuMP` also integrates with the AD libraries, so we'll also provide a rather minimal example.
 We also need a solver.
@@ -414,8 +419,8 @@ value(u)
 
 # ╔═╡ 0c7a98d8-d758-4ea8-92cd-ec20e3bbfcef
 md"""
-`JuMP` automatically calculates first- and second-order derivatives using spares reverse-mode automatic differentiation.[^2]
-For user defined operators, see [^3].
+`JuMP` automatically calculates first- and second-order derivatives using sparse reverse-mode automatic differentiation.[^2]
+For user-defined operators, see [^3].
 
 [^2]: https://jump.dev/JuMP.jl/stable/manual/nonlinear/#Automatic-differentiation
 [^3]: https://jump.dev/JuMP.jl/stable/tutorials/nonlinear/operator_ad/
@@ -437,7 +442,8 @@ We try to find the (global) minimum of the Rosenbrock function.
 	f(x, y) = $(latexify(rosenbrock(x, y, a, b)))
 ```
 
-According to [Wikipedia](https://en.wikipedia.org/wiki/Rosenbrock_function) this is a performance test for optimization algorithms.
+According to [Wikipedia](https://en.wikipedia.org/wiki/Rosenbrock_function),
+this is a performance test for optimization algorithms.
 
 For ``b ≥ 0``, it is trivial to read off the global minimum ``f(x^*, y^*)=0`` with:
 
