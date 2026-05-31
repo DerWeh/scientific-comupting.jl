@@ -67,7 +67,7 @@ md"""
 """
 
 # ╔═╡ 6070ecde-6658-4563-8c58-1195c57fec07
-plotly()
+plotly(); plotly()  # there is some initialization issue, so we have to rerun it
 
 # ╔═╡ a5d8d852-2bc4-40cb-820f-a7fb61564dd5
 md"""
