@@ -6,6 +6,17 @@ using InteractiveUtils
 
 # ╔═╡ cdbfba83-c2ee-413e-beca-b8a41cf53f91
 import PlotlyBase, PlotlyKaleido  # needed in Pluto to avoid race conditon
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
 
 # ╔═╡ ae041fa8-ac52-11f0-a8be-eb63a356988e
 using Plots
@@ -23,7 +34,7 @@ using Latexify
 using Measurements
 
 # ╔═╡ 365f9646-4f03-45c4-bc59-832053fbd81c
-using MonteCarloMeasurements: Particles, errorbarplot, mcplot, ribbonplot
+using MonteCarloMeasurements: Particles, errorbarplot, mcplot, ribbonplot, pmean, pstd
 
 # ╔═╡ b602d78e-3304-496d-8283-5e6a33b18200
 using Distributions
@@ -281,32 +292,6 @@ velocity_std = 0.1u"m/s"
 # we downsample the velocity a bit to get nicer plots
 velocity_measured = @. @view(velocity[begin:3:end]) ± velocity_std
 
-# ╔═╡ 4bb49099-af36-4379-9356-40afd92b76b2
-mass_rstd = 0.05
-
-# ╔═╡ 34ce792e-9f83-491b-9094-a0eb1ed799c2
-md"""
-### Simple errors
-
-We can also add simple (Gaussian) measurement errors.
-For simplicity, we assume a fixed accuracy of $(velocity_std) for the velocity and a relative error of $(mass_rstd) for the mass.
-"""
-
-# ╔═╡ 7340575f-a877-47ce-b2cf-23abc95ca57f
-masses_measured = @. masses ± (masses*mass_rstd)
-
-# ╔═╡ b12c6d57-89d9-422f-a198-ce943cbb7d9f
-kinetic_energies_uncertain = @. uconvert(u"J", 1//2 * masses_measured' * velocity_measured^2)
-
-# ╔═╡ baf23986-d825-4869-9f78-10a6f937e8fb
-with(:gr) do
-	plot(xlabel="v", ylabel="E_{kin}", unitformat=(l, u)->latexify(l, u, labelformat=:round))
-	for idx in eachindex(masses)
-		plot!(velocity_measured, @view(kinetic_energies_uncertain[:, idx]), label="m=$(masses_measured[idx])")
-	end
-	plot!()
-end
-
 # ╔═╡ 8d9aee2d-e598-4c59-ba77-0f00eca98dc4
 md"""
 Multiple dispatch sometimes feels like magic, doesn't it?
@@ -337,10 +322,20 @@ md"""
 For simplicity we assume the same normal distribution for velocity.
 Masses are non-negative, thus a normal distribution is not appropriate.
 We switch to log-normal.
+Sadly, the `Distribution.jl` package is not (yet) compatible with `Unitful.jl`.
+It explicitly expects `Real` numbers, see [Issue 1413](https://github.com/JuliaStats/Distributions.jl/issues/1413).
 """
 
 # ╔═╡ d11f6085-7b9e-4415-bfb2-fd1eaa14e1eb
 velocity_mc = @. @view(velocity[begin:3:end]) + Particles(Normal(0, 1)) * velocity_std
+
+# ╔═╡ 07d0e724-9c70-42ca-b71d-be4bad74e006
+md"""
+As a short sanity check, let's calculate the (mean) statistics over the array, to make sure we correctly constructed the distributions:
+
+ - mean(vᵢ) - vᵢ = $(mean(pmean(velocity_mc .- @view(velocity[begin:3:end]))))
+ - std(vᵢ) = $(mean(pstd.(velocity_mc)))
+"""
 
 # ╔═╡ 6424ff27-93ef-4fed-a08b-5fa519b45997
 function error_lognormal(m,std)
@@ -351,11 +346,64 @@ function error_lognormal(m,std)
     return LogNormal(μ,σ)
 end
 
-# ╔═╡ b458b13c-6e41-4067-8895-0c66794ca24f
-masses_mc = [
-	Particles(error_lognormal(ustrip(mi), ustrip(mi)*mass_rstd))*unit(mi)
-	for mi in masses
-]
+# ╔═╡ c47c384e-43d8-421e-abd6-a0c9b4c46c72
+md"""
+Let's also have an individual look, I am not that familiar with log-normal distributions.
+(Feel free to crank up the error in the mass to see the asymmetry and the fact, that it remains non-negative.)
+"""
+
+# ╔═╡ 6c0e2b60-c4ad-4753-8a4f-8da887468cba
+@bind mass_rstd Slider(0:0.05:1, default=0.05, show_value=true)
+
+# ╔═╡ 34ce792e-9f83-491b-9094-a0eb1ed799c2
+md"""
+### Simple errors
+
+We can also add simple (Gaussian) measurement errors.
+For simplicity, we assume a fixed accuracy of $(velocity_std) for the velocity and a relative error of $(mass_rstd) for the mass.
+"""
+
+# ╔═╡ 4bb49099-af36-4379-9356-40afd92b76b2
+mass_rstd  # defined later
+
+# ╔═╡ 7340575f-a877-47ce-b2cf-23abc95ca57f
+masses_measured = @. masses ± (masses*mass_rstd)
+
+# ╔═╡ b12c6d57-89d9-422f-a198-ce943cbb7d9f
+kinetic_energies_uncertain = @. uconvert(u"J", 1//2 * masses_measured' * velocity_measured^2)
+
+# ╔═╡ baf23986-d825-4869-9f78-10a6f937e8fb
+with(:gr) do
+	plot(xlabel="v", ylabel="E_{kin}", unitformat=(l, u)->latexify(l, u, labelformat=:round))
+	for idx in eachindex(masses)
+		plot!(velocity_measured, @view(kinetic_energies_uncertain[:, idx]), label="m=$(masses_measured[idx])")
+	end
+	plot!()
+end
+
+# ╔═╡ b10692d5-bf33-4734-8062-6cf8579b63a8
+masses_mc = masses .* Particles(error_lognormal(1, mass_rstd))
+
+# ╔═╡ 817b166a-c907-47a3-a21c-1fafb7b40b06
+pmean.(masses_mc)
+
+# ╔═╡ 13f339af-5080-4683-98ca-c012166e269f
+@. pstd(masses_mc) / masses
+
+# ╔═╡ 239e2d0c-69e4-450c-a54c-886a10f3acea
+begin
+	plot()
+	for m in masses_mc
+		plot!(m, alpha=0.8)
+	end
+	plot!(xlabel="m")
+end
+
+# ╔═╡ 5f588aaa-cd7b-430f-ae11-08e3f9f791da
+md"""
+So far so good.
+Now, let's have a look at our derived quantity, the kinetic energy.
+"""
 
 # ╔═╡ 860f733c-f298-4c9f-a4e8-cbc938928538
 kinetic_energies_mc = @. uconvert(u"J", 1//2 * masses_mc' * velocity_mc^2)
@@ -2312,7 +2360,6 @@ version = "1.9.2+0"
 # ╠═c9ac0c80-0c1c-4f78-bec3-59cd5edb8f34
 # ╟─7c32f51f-09d0-4812-9f19-08bcfcde99a8
 # ╠═d31a4e85-61d5-41d6-a7e5-1410a7afa1ec
-# ╠═e3232e8e-d578-4c13-bc40-3e677cd089b3
 # ╟─5c2355cf-8d1b-4ed5-b77b-221641dbeb56
 # ╠═305caacc-cc12-4a04-bb14-daf7c0070fb1
 # ╟─7ffbe5fe-4514-45ca-8f3e-48ee5df018a8
@@ -2344,8 +2391,15 @@ version = "1.9.2+0"
 # ╟─2cc26d9e-2e97-4a8b-ada3-2c36b5957d1a
 # ╟─89651e5a-349d-45b3-8db4-e5ef616b56ef
 # ╠═d11f6085-7b9e-4415-bfb2-fd1eaa14e1eb
+# ╟─07d0e724-9c70-42ca-b71d-be4bad74e006
 # ╠═6424ff27-93ef-4fed-a08b-5fa519b45997
-# ╠═b458b13c-6e41-4067-8895-0c66794ca24f
+# ╠═b10692d5-bf33-4734-8062-6cf8579b63a8
+# ╠═817b166a-c907-47a3-a21c-1fafb7b40b06
+# ╠═13f339af-5080-4683-98ca-c012166e269f
+# ╟─c47c384e-43d8-421e-abd6-a0c9b4c46c72
+# ╠═6c0e2b60-c4ad-4753-8a4f-8da887468cba
+# ╠═239e2d0c-69e4-450c-a54c-886a10f3acea
+# ╟─5f588aaa-cd7b-430f-ae11-08e3f9f791da
 # ╠═860f733c-f298-4c9f-a4e8-cbc938928538
 # ╟─d8752d76-582c-4590-ace4-dc5cbabf7e63
 # ╠═7cc7235b-94f5-4703-8fe6-0974157560ba
