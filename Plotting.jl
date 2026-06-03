@@ -390,13 +390,16 @@ plot(kinetic_energies_mc[10,2], legend=false)
 # ╔═╡ 27f5e1d4-e605-4b56-9061-92a563582c9b
 md"""
 Or sample trajectories with quantiles of the results:
-
-(TODO: we hard code units...)
 """
 
 # ╔═╡ 01318861-de1a-4b62-ab4e-f173d7d004db
 with(:gr) do
-	plot(ustrip(velocity[begin:3:end]), ustrip(kinetic_energies_mc), xlabel=L"$v$ (m/s)", ylabel=L"$E_{kin}$ (J)")
+	plot(
+		ustrip(velocity[begin:3:end]),
+		ustrip(kinetic_energies_mc),
+		xlabel=L"$v$ (%$(unit(velocity[begin])))",
+		ylabel=L"$E_{kin}$ (%$(unit(kinetic_energies[begin])))",
+	)
 end
 
 # ╔═╡ ca273889-8312-4f13-a2be-69d58f748db1
