@@ -173,9 +173,8 @@ Using other backends would work just fine:
 """
 
 # ╔═╡ d31a4e85-61d5-41d6-a7e5-1410a7afa1ec
-begin
-	gr()
-	p = plot(
+with(:gr) do
+	plot(
 		x,
 		[x.^2 x.^3],
 		label=[L"$y = x^2$" L"$y = x^3$"],
@@ -183,12 +182,7 @@ begin
 		ylabel="y",
 		title="LaTeX legend using the GR backend.",
 	)
-	plotly()
-	p
 end
-
-# ╔═╡ e3232e8e-d578-4c13-bc40-3e677cd089b3
-gr()  # switching backends doesn't go well with Pluto's reactive style...
 
 # ╔═╡ 5c2355cf-8d1b-4ed5-b77b-221641dbeb56
 md"""
@@ -202,7 +196,7 @@ Let's consider a few more common needs:
 """
 
 # ╔═╡ 305caacc-cc12-4a04-bb14-daf7c0070fb1
-begin
+with(:gr) do
 	xmin = 1e-5
 	xmax = 4
 	xlog = logrange(xmin, xmax, length=20)
@@ -217,7 +211,7 @@ begin
 		ylabel!(lp, "y")
 	end
 	xlabel!(linplot, "x")
-	title!(logplot, "Combinging log scale and regular scale.")
+	title!(logplot, "Combining log scale and regular scale.")
 	plot(logplot, linplot, layout=(2, 1))
 end
 
@@ -272,8 +266,7 @@ And we can readily plot the results, with no chance of messing up the units:
 kinetic_energies
 
 # ╔═╡ dbdc53c7-f2bc-4e22-b1b0-e4f3790a4626
-begin
-	gr()
+with(:gr) do
 	plot(xlabel="v", ylabel="E_{kin}", unitformat=(l, u)->latexify(l, u, labelformat=:round))
 	for idx in eachindex(masses)
 		plot!(velocity, @view(kinetic_energies[:, idx]), label="m=$(masses[idx])")
@@ -306,8 +299,7 @@ masses_measured = @. masses ± (masses*mass_rstd)
 kinetic_energies_uncertain = @. uconvert(u"J", 1//2 * masses_measured' * velocity_measured^2)
 
 # ╔═╡ baf23986-d825-4869-9f78-10a6f937e8fb
-begin
-	gr()
+with(:gr) do
 	plot(xlabel="v", ylabel="E_{kin}", unitformat=(l, u)->latexify(l, u, labelformat=:round))
 	for idx in eachindex(masses)
 		plot!(velocity_measured, @view(kinetic_energies_uncertain[:, idx]), label="m=$(masses_measured[idx])")
@@ -376,9 +368,7 @@ We have to strip the units and reattach them.
 """
 
 # ╔═╡ 7cc7235b-94f5-4703-8fe6-0974157560ba
-begin
-	gr()
-	
+with(:gr) do
 	plot(
 		xlabel=L"$v$ (%$(unit(velocity_mc[begin])))",
 		ylabel=L"$E_{kin}$ (%$(unit(kinetic_energies_mc[begin])))",
@@ -405,7 +395,9 @@ Or sample trajectories with quantiles of the results:
 """
 
 # ╔═╡ 01318861-de1a-4b62-ab4e-f173d7d004db
-plot(ustrip(velocity[begin:3:end]), ustrip(kinetic_energies_mc), xlabel=L"$v$ (m/s)", ylabel=L"$E_{kin}$ (J)")
+with(:gr) do
+	plot(ustrip(velocity[begin:3:end]), ustrip(kinetic_energies_mc), xlabel=L"$v$ (m/s)", ylabel=L"$E_{kin}$ (J)")
+end
 
 # ╔═╡ ca273889-8312-4f13-a2be-69d58f748db1
 md"""
@@ -480,10 +472,7 @@ To get individual values, the `plotlyjs` backend is more suitable (mind the perf
 """
 
 # ╔═╡ 8834f50c-02a0-4242-bb5e-7c423110f3fc
-begin
-	plotly()
-	heatmap(ϕₚ, ϕₘ, Z, xlabel="ϕₚ", ylabel="ϕₘ")
-end
+heatmap(ϕₚ, ϕₘ, Z, xlabel="ϕₚ", ylabel="ϕₘ")
 
 # ╔═╡ 6bde5577-52d4-40d6-8ffc-4e426a2068a8
 md"""
@@ -491,8 +480,7 @@ We can also visualize the data as contours, to reduce the information:
 """
 
 # ╔═╡ 9e1c6fd3-fd84-4615-a233-50da2f7239f7
-begin
-	gr()
+with(:gr) do
 	contour(ϕₚ, ϕₘ, Z, xlabel=L"\phi_p", ylabel=L"\phi_m")
 end
 
@@ -541,10 +529,7 @@ We can show a color plot using `surface`:
 """
 
 # ╔═╡ fb736433-fd51-4cc9-9b84-a702c54dbaef
-begin
-	plotly()
-	surface(ϕₚ,	ϕₘ,	Z)
-end
+surface(ϕₚ,	ϕₘ,	Z)
 
 # ╔═╡ 4c441731-13f3-4c2e-a3ef-0369b6674b6c
 md"""
@@ -552,10 +537,8 @@ Or a mash plot:
 """
 
 # ╔═╡ 3072c253-3ec5-4213-aaa9-ee40577c29e1
-begin
-	plotly()
-	@views wireframe(ϕₚ[begin:5:end], ϕₘ[begin:5:end], Z[begin:5:end, begin:5:end])
-end
+# we downsample for a clearer picture
+@views wireframe(ϕₚ[begin:5:end], ϕₘ[begin:5:end], Z[begin:5:end, begin:5:end])
 
 # ╔═╡ e187d8d9-0143-4164-995a-88d353dafa50
 md"""
@@ -564,7 +547,6 @@ Or maybe a combination of both:
 
 # ╔═╡ 34f8423d-bc53-4178-a080-23ff65c074ff
 begin
-	plotly()
 	@views wireframe(ϕₚ[begin:10:end], ϕₘ[begin:10:end], Z[begin:10:end, begin:10:end])
 	surface!(ϕₚ, ϕₘ, Z, alpha=0.7)
 end
