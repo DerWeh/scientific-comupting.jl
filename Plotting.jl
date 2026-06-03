@@ -196,16 +196,16 @@ Let's consider a few more common needs:
 """
 
 # ╔═╡ 305caacc-cc12-4a04-bb14-daf7c0070fb1
-with(:gr) do
+with(:plotly) do
 	xmin = 1e-5
 	xmax = 4
 	xlog = logrange(xmin, xmax, length=20)
 	xlin = range(xmin, xmax, length=20)
 	logplot = plot(xscale=:log10, yscale=:log10, minorgrid=true)  # create object
 	linplot = plot()
-	for power in (2, 3)
-		plot!(logplot, xlog, xlog.^power, legend=false)
-		plot!(linplot, xlin, xlin.^power, label=L"y = x^%$(power)")
+	for (power, label) in ((2, "x²"), (3, "x³"))
+		plot!(logplot, xlog, xlog.^power, label=false)
+		plot!(linplot, xlin, xlin.^power, label="y = $(label)", legend=:topleft)
 	end
 	for lp in (logplot, linplot)
 		ylabel!(lp, "y")
