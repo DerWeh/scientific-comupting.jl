@@ -385,7 +385,7 @@ We can show the distribution of a simple point:
 """
 
 # ╔═╡ a3c98c2e-05ed-4c5b-8cc5-7dea0fad108e
-plot(kinetic_energies_mc[10,2])
+plot(kinetic_energies_mc[10,2], legend=false)
 
 # ╔═╡ 27f5e1d4-e605-4b56-9061-92a563582c9b
 md"""
