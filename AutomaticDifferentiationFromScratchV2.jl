@@ -768,7 +768,6 @@ function backprop_rule(transform::Base.Fix2{typeof(.|>), Vector{Function}}, x)
 	y = similar(x)
 	dy = similar(x)
 	for idx in eachindex(transform.x)
-		idx, y[idx], x[idx], transform.x[idx]
 		y[idx], backprop = backprop_rule(transform.x[idx], x[idx])
 		dy[idx] = backprop(1)
 	end

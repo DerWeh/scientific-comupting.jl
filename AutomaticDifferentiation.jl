@@ -32,7 +32,7 @@ using Unitful
 using PlutoUI
 
 # ╔═╡ 5e923e44-056b-45d4-a621-eb8bfad10079
-using Symbolics, Latexify, Markdown
+using Symbolics, Latexify
 
 # ╔═╡ 8161afd4-7c0c-4d35-8993-eeffb053cc6b
 md"""
