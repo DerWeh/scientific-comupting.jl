@@ -488,6 +488,8 @@ Let's consider the solution at `t=10`.
 Automatic differentiation directly yields the Jacobian of the solution,
 providing the local sensitivity[^4].
 
+Note that `lotka_volterra_solution` re-solves the ODE on plain real numbers, dropping the `Unitful` quantities we used above for the visualization: the AD backend and `jacobian` operate on unitless reals.
+
 [^4]: Consider a dedicated high-level package like [SciMLSensitivity](https://docs.sciml.ai/SciMLSensitivity/stable/) if you are really interested in the sensitivity.
 """
 
@@ -531,7 +533,6 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Ipopt = "b6b21f68-93f8-5de0-b562-5493be1d77c9"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -561,7 +562,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "5688e1f4e64d02598e99c7b78577e12315a19be7"
+project_hash = "e274593a6c66d02d95dae36b8268dbf8ed1cc949"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "27cecae79e5cc9935255f90c53bb831cc3c870d7"
