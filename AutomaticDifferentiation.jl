@@ -444,7 +444,7 @@ Let's consider the Lotka-Volterra equations as a simple example:
 	\end{pmatrix}
 	= \begin{pmatrix}
 		p_1 u_1 - p_2 u_1 u_2
-		\\ -3u_2 + u_1 u_2
+		\\ -p_3 u_2 + p_4 u_1 u_2
 	\end{pmatrix}.
 ```
 """
