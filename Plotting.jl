@@ -4,8 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ cdbfba83-c2ee-413e-beca-b8a41cf53f91
-import PlotlyBase, PlotlyKaleido  # needed in Pluto to avoid race conditon
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
@@ -612,6 +610,9 @@ It also supports different [backends](https://docs.makie.org/stable/#Installatio
 
 Check out the [tutorial](https://docs.makie.org/stable/tutorials/getting-started).
 """
+
+# ╔═╡ cdbfba83-c2ee-413e-beca-b8a41cf53f91
+import PlotlyBase, PlotlyKaleido  # needed in Pluto to avoid race conditon
 
 # ╔═╡ b3585c8e-3458-4447-997b-c40dad1c367a
 ENV["UNITFUL_FANCY_EXPONENTS"] = "true";  # use unicode exponents
