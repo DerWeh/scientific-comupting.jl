@@ -309,9 +309,9 @@ But for comparisons, we have to restrict `Number` to `Real`.
 # ╔═╡ 1aba3e89-98e6-42d6-9fdc-1256e99898f7
 begin
 	import Base: >
-	>(a::DualV1{Real}, b::DualV1{Real}) = a.x > b.x
+	>(a::DualV1{<:Real}, b::DualV1{<:Real}) = a.x > b.x
 	>(a::DualV1, b) = a.x > b
-	>(a::Real, b::DualV1{Real}) = a > a.x
+	>(a::Real, b::DualV1{<:Real}) = a > b.x
 end
 
 # ╔═╡ bbdc708e-293d-41da-b756-c28d03da81fe
