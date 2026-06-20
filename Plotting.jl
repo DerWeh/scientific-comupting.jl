@@ -370,14 +370,17 @@ with(:gr) do
 	plot!()
 end
 
-# ╔═╡ b10692d5-bf33-4734-8062-6cf8579b63a8
+# ╔═╡ 3ce700de-abd8-4db1-b744-9ecd465ea57d
 masses_mc = masses .* Particles(error_lognormal(1, mass_rstd))
 
-# ╔═╡ 817b166a-c907-47a3-a21c-1fafb7b40b06
-pmean.(masses_mc)
-
-# ╔═╡ 13f339af-5080-4683-98ca-c012166e269f
-@. pstd(masses_mc) / masses
+# ╔═╡ eea5ef50-9e0d-4517-b771-d54b8127e5a3
+md"""
+Again, a short sanity check that we constructed the mass distributions correctly:
+  - mean(mᵢ) = $(join(string.(pmean.(masses_mc)), ", "))\
+    (input: `masses` = $(join(string.(masses), ", "))
+  - std(mᵢ)/mᵢ = $(join(string.(pstd.(masses_mc) ./ masses), ", "))\
+    (input: `mass_rst` = $(mass_rstd))
+"""
 
 # ╔═╡ 239e2d0c-69e4-450c-a54c-886a10f3acea
 begin
@@ -2382,9 +2385,8 @@ version = "1.9.2+0"
 # ╠═d11f6085-7b9e-4415-bfb2-fd1eaa14e1eb
 # ╟─07d0e724-9c70-42ca-b71d-be4bad74e006
 # ╠═6424ff27-93ef-4fed-a08b-5fa519b45997
-# ╠═b10692d5-bf33-4734-8062-6cf8579b63a8
-# ╠═817b166a-c907-47a3-a21c-1fafb7b40b06
-# ╠═13f339af-5080-4683-98ca-c012166e269f
+# ╠═3ce700de-abd8-4db1-b744-9ecd465ea57d
+# ╟─eea5ef50-9e0d-4517-b771-d54b8127e5a3
 # ╟─c47c384e-43d8-421e-abd6-a0c9b4c46c72
 # ╠═6c0e2b60-c4ad-4753-8a4f-8da887468cba
 # ╠═239e2d0c-69e4-450c-a54c-886a10f3acea
