@@ -599,7 +599,7 @@ It is very natural to implement, but for a function
 ```math
 	f: \mathbb{R}^n -> \mathbb{R}^m
 ```
-we need $n$ sweeps.
+we need ``n`` sweeps.
 Each sweep generates one column of the Jacobian matrix
 ```math
 	\boldsymbol{J}_{\boldsymbol{f}}
@@ -663,9 +663,9 @@ Thus, the derivate can be expressed as the recursion relation
 
 # ╔═╡ 90945cd0-2e82-454b-a331-d6eb086a4eaa
 md"""
-In optimization problems, typically a scalar $m=1$ loss functions is optimized.
+In optimization problems, typically a scalar ``m=1`` loss function is optimized.
 In this case, *reverse mode* automatic differentiation, also called *adjoint mode*, is more efficient.
-It calculates a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring $m$ weeps for the full Jacobian.
+It calculates a full gradient for a single function component ``\boldsymbol{\nabla}f_j`` in each sweep requiring ``m`` sweeps for the full Jacobian.
 However, reverse mode AD typically caches intermediate results for performance, requiring a large amount of memory.
 
 In reverse mode AD, we traverse the function chain in the opposite direction, from left to right, starting with ``\frac{∂y}{∂w_3} \stackrel{!}{=} 1``.
