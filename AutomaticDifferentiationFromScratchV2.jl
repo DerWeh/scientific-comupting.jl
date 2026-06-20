@@ -98,7 +98,7 @@ To implement this we define dual numbers, keeping track of the derivative along 
 
 # ╔═╡ 7aaeb842-b7bd-4081-8a46-db7b0f3459b0
 md"""
-## The most naive way
+## The naive way
 """
 
 # ╔═╡ cac73c9a-0a18-4c1d-87eb-b54bb991415b
@@ -1975,7 +1975,7 @@ version = "17.7.0+0"
 # ╠═d6712129-dcce-4884-8bb2-12724fff2622
 # ╠═e86e42cf-5787-452e-992a-4db9a48f2bd1
 # ╟─27cb8eac-a052-45b6-9b4e-55ee0dd72048
-# ╟─2eb2e25c-df4b-4059-8395-c1fab6400bdf
+# ╠═2eb2e25c-df4b-4059-8395-c1fab6400bdf
 # ╠═b8ca321b-736c-4a29-bec6-041bdb4c28fc
 # ╟─03ddb110-d167-427a-9694-06dd09a59735
 # ╠═4dce8bce-42b1-4637-a486-f7c6692664bf

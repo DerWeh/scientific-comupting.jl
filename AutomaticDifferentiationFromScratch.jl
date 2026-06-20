@@ -23,7 +23,7 @@ But let's first start out with the traditional approaches and their limitations.
 
 # ╔═╡ 1d9e9278-4dcd-4a22-a3ff-2a0d5426e4c1
 md"""
-## Finite differences
+# Finite differences
 
 Let's start with the school book definition of a derivative:
 
@@ -55,9 +55,10 @@ numerically it's the other way around: integrating is quite simple while differe
 
 # ╔═╡ 2eb2e25c-df4b-4059-8395-c1fab6400bdf
 md"""
-## Symbolic differentiation
+# Symbolic differentiation
 
 Symbolic differentiation calculates the analytic derivative of functions using symbolic computation.
+This is like the pen-and-paper version of doing derivatives.
 
 We'll use the [Symbolics.jl](https://docs.sciml.ai/Symbolics/stable/) computer algebra system.
 """
@@ -81,7 +82,7 @@ Especially as soon as branches and loops get involved, symbolic differentiation 
 
 # ╔═╡ 2c41d052-6f0a-40af-be12-6f193b24b971
 md"""
-## Automatic differentiation
+# Automatic differentiation
 
 Automatic differentiation is the modern solution: We evaluate the derivative along with the function without building the function graph.
 
@@ -131,11 +132,8 @@ derivative(y)
 md"""
 So far, we haven't done anything impressive.
 We only calculated a trivial derivative, and we even had to specify it ourselves.
-So far we cannot do anything useful:
+So far we cannot do anything useful.
 """
-
-# ╔═╡ 01e818d7-106a-4cc8-8c78-9aed8667152b
-
 
 # ╔═╡ 854e677c-bd3f-4e0f-9e07-6818a8713411
 md"""
@@ -337,7 +335,7 @@ So let's instead go back to evaluating the derivative at numeric values.
 
 # ╔═╡ a6175368-8212-42c5-8e32-a243ae23019d
 md"""
-Next, let's consider the arithmetic-geometric mean (AGM), which is e.g. useful to efficiently evaluate elliptic integrals.
+Next, let's consider the [arithmetic-geometric mean](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean) (AGM), which is e.g. useful to efficiently evaluate elliptic integrals.
 The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` of the series
 
 ```math
@@ -348,6 +346,11 @@ The AGM of `x` and `y` is defined by the limit ``\lim_{n \rightarrow \infty}`` o
 ```
 
 where `a_n` is the arithmetic mean of the previous results, and `g_n` the geometric mean of the previous results.
+"""
+
+# ╔═╡ f0a17e7f-8a4a-473c-b6e8-1b3ce818b642
+md"""
+Let's cross-check our implementation with the [example](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean#Example) from Wikipedia:
 """
 
 # ╔═╡ c788f25b-0f77-4396-a999-9917f99a872f
@@ -1637,10 +1640,9 @@ version = "17.7.0+0"
 # ╠═a636e3e2-9f63-48ce-94dd-3006bafab90e
 # ╠═01eb43eb-90bf-4b9f-9f77-9dc2015be8b0
 # ╟─f12b46af-0d0c-458a-897d-66eeab419ece
-# ╠═01e818d7-106a-4cc8-8c78-9aed8667152b
 # ╟─854e677c-bd3f-4e0f-9e07-6818a8713411
 # ╠═9cf8876a-0feb-4ace-92f0-4a5ee9753729
-# ╠═bea2fffb-e2d6-4f34-8a0a-9d632d5a12bd
+# ╟─bea2fffb-e2d6-4f34-8a0a-9d632d5a12bd
 # ╠═c3c7fd11-7f6e-48ad-bbbd-822bf3665248
 # ╠═b1598942-2300-4a3c-bb08-1f6dadcbd4c6
 # ╠═97206602-e5fe-4c7e-bbbc-1a68daa46dfc
@@ -1677,6 +1679,7 @@ version = "17.7.0+0"
 # ╠═fc4d4dae-afa4-49d3-bbde-78ec41847001
 # ╟─a6175368-8212-42c5-8e32-a243ae23019d
 # ╠═4fe33ed1-a20c-4840-9ab4-42828e7b8804
+# ╟─f0a17e7f-8a4a-473c-b6e8-1b3ce818b642
 # ╠═e25b9ee5-bacb-42e1-a947-3dcc8d158368
 # ╟─c788f25b-0f77-4396-a999-9917f99a872f
 # ╠═57fdca80-e35f-40bc-8ba0-83d1d777dcbc
