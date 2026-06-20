@@ -449,7 +449,7 @@ Alternatively, we can use
 
 # ╔═╡ f75506d5-17d0-4d58-b0a6-914722d5058e
 md"""
-`StatsPlots` offers additional a density plot for a single sample:
+`StatsPlots` offers an additional density plot for a single sample:
 """
 
 # ╔═╡ 0d442981-045b-449e-9e03-44fbab35d96f
@@ -495,7 +495,7 @@ heatmap(ϕₚ, ϕₘ, Z, xlabel=L"\phi_p", ylabel=L"\phi_m")
 # ╔═╡ 8a1e4a89-e6b5-4391-a028-b376b99e2b02
 md"""
 !!! warning "Use appropriate color schemes"
-	 * Use perceptionally uniform color schemes for numeric data (`:default`).
+	 * Use perceptually uniform color schemes for numeric data (`:default`).
 	 * Never use rainbows.
 	 * Use diverging color maps if you have positive/negative effects and center 0 (`:bluesreds`).
      * Use cyclic color maps for a phase (`:cyclic_wrwbw_40_90_c42_n256_s25`).
@@ -573,7 +573,7 @@ surface(ϕₚ,	ϕₘ,	Z)
 
 # ╔═╡ 4c441731-13f3-4c2e-a3ef-0369b6674b6c
 md"""
-Or a mash plot:
+Or a mesh plot:
 """
 
 # ╔═╡ 3072c253-3ec5-4213-aaa9-ee40577c29e1
@@ -595,7 +595,7 @@ end
 md"""
 # Outlook: Makie
 
-Nowadays, [Makie](https://docs.makie.org/stable/) has more stars than `Plots` and is slowly (or rapidly?) replacying `Plots` as the standard library for plotting in Julia.
+Nowadays, [Makie](https://docs.makie.org/stable/) has more stars than `Plots` and is slowly (or rapidly?) replacing `Plots` as the standard library for plotting in Julia.
 
 It also supports different [backends](https://docs.makie.org/stable/#Installation) for GPU acceleration or webplots.
 
