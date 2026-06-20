@@ -55,7 +55,7 @@ md"""
 In general, finite differences have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
 Finite difference become slow, when calculating gradients with respect to many inputs.
 
-Some packages offer to calculate numerical derivates using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
+Some packages offer to calculate numerical derivatives using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
 While calculating analytical integrations is hard and differentiation is simple,
 numerically it's the other way around: integrating is quite simple while differentiations becomes hard.
 """
@@ -231,7 +231,7 @@ Base.:*(a::Dual, b::Dual) = Dual(a.x * b.x, a.dx*b.x + a.x*b.dx)
 # ╔═╡ 8c01d6c6-3b89-4539-a78f-9965de105c58
 md"""
 This is a good point to remember how magic generic programming can be.
-Our definition of `Dual` was generic with respect to the data type, so far we only used `Float64`, but it works just es well for other precisions like `Float32`, arbitrary precision (`BigFLoat`), and even symbols!
+Our definition of `Dual` was generic with respect to the data type, so far we only used `Float64`, but it works just as well for other precisions like `Float32`, arbitrary precision (`BigFloat`), and even symbols!
 By implementing automatic differentiation, we get symbolic differentiation for free!
 
 This is quite useful to validate our implementation.
@@ -510,7 +510,7 @@ Thus, a good default choice for the step size ``h`` is
 ```
 where ``ϵ`` is the used floating point precision.
 For double precision, we get ``h^* = `` $(round(cbrt(eps(Float64)), sigdigits=1));
-For double precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
+For single precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
 """
 
 # ╔═╡ be38cb8c-2825-4738-b490-5e2a89398cc7
@@ -548,7 +548,7 @@ abs(cfd(sqrt, 0.1) - inv(2*sqrt(0.1)))
 abs(cfd(sqrt, 0.1f0) - inv(2*sqrt(0.1f0)))
 
 # ╔═╡ 4fe33ed1-a20c-4840-9ab4-42828e7b8804
-"""Algorithmic-geometric mean."""
+"""Arithmetic-geometric mean."""
 function agm(x, y)
 	a = x
 	g = y
@@ -706,8 +706,8 @@ fc₂(x) = x .|> [sin, cos] |> sum
 # ╔═╡ 90323fe7-95ae-4bf7-886c-bd4d1e841977
 md"""
 Again, we have to implement the rules, what the derivative of each individual component is.
-This time, we implement the derivates as closures[^1].
-In a forward pass, we evaluate the function and keep track of the derivates.
+This time, we implement the derivatives as closures[^1].
+In a forward pass, we evaluate the function and keep track of the derivatives.
 
 [^1]: This is not really compiler friendly.
       Creating a `tape` structure and working with overloads should be more efficient.

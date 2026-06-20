@@ -48,7 +48,7 @@ md"""
 In general, finite difference have problems with numerical inaccuracies and instabilities, especially when calculating higher order derivatives.
 Finite difference become slow, when calculating gradients with respect to many inputs.
 
-Some packages offer to calculate numerical derivates using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
+Some packages offer to calculate numerical derivatives using integration employing the *residue theorem* instead, to avoid numerical inaccuracies, see e.g. [mpmath's `method='quad'`](https://www.mpmath.org/doc/current/calculus/differentiation.html#numerical-derivatives-diff-diffs).
 While calculating analytical integrations is hard and differentiation is simple,
 numerically it's the other way around: integrating is quite simple while differentiations becomes hard.
 """
@@ -209,7 +209,7 @@ derivative(x*y)
 # ╔═╡ 8c01d6c6-3b89-4539-a78f-9965de105c58
 md"""
 This is a good point to remember how magic generic programming can be.
-Our definition of `DualV1` was generic with respect to the data type, so far we only used `Float64`, but it works just es well for other precisions like `Float32`, arbitrary precision (`BigFLoat`), and even symbols!
+Our definition of `DualV1` was generic with respect to the data type, so far we only used `Float64`, but it works just as well for other precisions like `Float32`, arbitrary precision (`BigFloat`), and even symbols!
 By implementing automatic differentiation, we get symbolic differentiation for free!
 
 This is quite useful to validate our implementation.
@@ -398,7 +398,7 @@ Thus, a good default choice for the step size ``h`` is
 ```
 where ``ϵ`` is the used floating point precision.
 For double precision, we get ``h^* = `` $(round(cbrt(eps(Float64)), sigdigits=1));
-For double precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
+For single precision, we get ``h^* = `` $(round(cbrt(eps(Float32)), sigdigits=1)).
 """
 
 # ╔═╡ 8d16f0a8-5425-45bf-be89-556dd927206b
@@ -465,7 +465,7 @@ abs(cfd(sqrt, 0.1) - inv(2*sqrt(0.1)))
 abs(cfd(sqrt, 0.1f0) - inv(2*sqrt(0.1f0)))
 
 # ╔═╡ 4fe33ed1-a20c-4840-9ab4-42828e7b8804
-"""Algorithmic-geometric mean."""
+"""Arithmetic-geometric mean."""
 function agm(x, y)
 	a = x
 	g = y
@@ -487,7 +487,7 @@ md"""
 ## Using Julia's system of type promotion
 
 So far we had quite some redundancy.
-We always had to implement 3 methods for eqach operator `op`:
+We always had to implement 3 methods for each operator `op`:
  * `op(::DualV1, ::DualV1)`,
  * `op(::DualV1, ::Number)`,
  * `op(::Number, ::DualV1)`.
@@ -497,7 +497,7 @@ We can avoid this redundant definitions by leveraging Julia's type promotion sys
 """
 
 # ╔═╡ 700d8843-b48f-49c3-876e-418c1011da69
-struct Dual{T} <: Number  # dual numbers are nubers
+struct Dual{T} <: Number  # dual numbers are numbers
 	x::T
 	dx::T
 end
@@ -513,7 +513,7 @@ end
 
 # ╔═╡ 8af58edc-0388-4c8e-af07-773252c434a8
 md"""
-Check out version 2 of the notebook for a more elecant version using type promotion.
+Check out version 2 of the notebook for a more elegant version using type promotion.
 """
 
 # ╔═╡ 4d436b91-06dc-462b-a2e2-f8704d50d37a
