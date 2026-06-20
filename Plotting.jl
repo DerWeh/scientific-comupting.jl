@@ -265,15 +265,6 @@ md"""
 And we can readily plot the results, with no chance of messing up the units:
 """
 
-# ╔═╡ 15bdf230-a09a-4c68-8dd9-291397979017
-# default(fontfamily="Computer Modern")
-
-# ╔═╡ 905d1ded-dbfc-411d-86a3-7b6e419f26de
-["m=$(mi)" for mi in masses]
-
-# ╔═╡ b7adbb5d-c2b2-4834-9e8d-1a25915ee890
-kinetic_energies
-
 # ╔═╡ dbdc53c7-f2bc-4e22-b1b0-e4f3790a4626
 with(:gr) do
 	plot(xlabel="v", ylabel="E_{kin}", unitformat=(l, u)->latexify(l, u, labelformat=:round))
@@ -2373,9 +2364,6 @@ version = "1.9.2+0"
 # ╠═00451360-1142-47ca-9d4f-d48a4a8c92fa
 # ╟─212a5c72-a742-46db-98d6-348b8102a624
 # ╠═71627367-6ac0-4252-8181-b15b1357a8f0
-# ╠═15bdf230-a09a-4c68-8dd9-291397979017
-# ╠═905d1ded-dbfc-411d-86a3-7b6e419f26de
-# ╠═b7adbb5d-c2b2-4834-9e8d-1a25915ee890
 # ╠═dbdc53c7-f2bc-4e22-b1b0-e4f3790a4626
 # ╟─34ce792e-9f83-491b-9094-a0eb1ed799c2
 # ╠═a8c8bbec-6ed8-453e-b176-252319b57939
